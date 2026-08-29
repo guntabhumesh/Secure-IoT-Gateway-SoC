@@ -1,0 +1,63 @@
+# Simulation generated files
+*.vcd
+*.fsdb
+*.wlf
+*.vpd
+*.log
+*.jou
+*.history
+*.key
+*.dump
+*.swp
+*.swo
+*~
+
+# VCS / Synopsys generated files
+proj_dir/run/simv
+proj_dir/run/simv.daidir/
+proj_dir/run/csrc/
+proj_dir/run/AN.DB/
+proj_dir/run/verdiLog/
+proj_dir/run/novas_dump.log
+proj_dir/run/dump.fsdb
+proj_dir/run/ucli.key
+proj_dir/run/vc_hdrs.*
+proj_dir/run/verdi_config_file
+
+# Other generated simulation databases
+*.sdb
+*.kdb
+*.so
+*.o
+*.a
+*.db
+
+# Verilator
+obj_dir/
+coverage/
+
+# Python
+__pycache__/
+*.pyc
+
+# Editor
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary generated files
+*.tmp
+*.bak
+*.orig
+# Verdi configuration files
+proj_dir/run/novas.conf
+proj_dir/run/novas.rc
+proj_dir/tb/*.rc
+EOF
+
+
+
+y
