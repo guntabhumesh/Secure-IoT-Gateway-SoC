@@ -52,7 +52,7 @@ module axi_interconnect_wrap_2x11 #
     // Base addresses must be naturally aligned to their address window.
     // With ADDR_WIDTH=24 (16 MB window), each base must be a multiple of
     // 2^24 = 0x01000000.
-    parameter M00_BASE_ADDR = 32'h0000_0000,  // m00 → i2c_master_top
+    parameter M00_BASE_ADDR = 32'h0000_0000, // m00 → i2c_master_top
     parameter M00_ADDR_WIDTH = {M_REGIONS{32'd24}},
     parameter M00_CONNECT_READ = 2'b11,
     parameter M00_CONNECT_WRITE = 2'b11,

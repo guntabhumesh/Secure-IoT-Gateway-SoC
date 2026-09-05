@@ -1,0 +1,36 @@
+REGister spec
+
+| Address | Register      |Access Type| Contents                           |
+| ------- | ------------- | ---------| ---------------------------------- |
+| `0x00`  | `CTRL_STATUS` | **R/W    | `[31:16] STATUS`, `[15:0] CONTROL` |
+| `0x04`  | `KEY0`        | **R/W    | Key `[127:96]`                     |
+| `0x08`  | `KEY1`        | **R/W    | Key `[95:64]`                      |
+| `0x0C`  | `KEY2`        | **R/W    | Key `[63:32]`                      |
+| `0x10`  | `KEY3`        | **R/W    | Key `[31:0]`                       |
+| `0x14`  | `TEXT0`       | **R/W    | Plaintext `[127:96]`               |
+| `0x18`  | `TEXT1`       | **R/W    | Plaintext `[95:64]`                |
+| `0x1C`  | `TEXT2`       | **R/W    | Plaintext `[63:32]`                |
+| `0x20`  | `TEXT3`       | **R/W    | Plaintext `[31:0]`                 |
+| `0x24`  | `OUT0`        | **R      | Ciphertext `[127:96]`              |
+| `0x28`  | `OUT1`        | **R      | Ciphertext `[95:64]`               |
+| `0x2C`  | `OUT2`        | **R      | Ciphertext `[63:32]`               |
+| `0x30`  | `OUT3`        | **R      | Ciphertext `[31:0]`                |
+
+
+0x00 : CTRL_STATUS
+
+STATUS [31:16]
+    bit 16 = DONE
+    bit 17 = KDONE
+    bit 31:18 = RESERVED
+
+CONTROL [15:0]
+    bit 0  = LD
+    bit 1  = KLD
+    bit 2  = RST
+    bit 15:3 = RESERVED
+
+
+
+
+
