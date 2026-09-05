@@ -145,7 +145,10 @@ module dummy_axi_slave #(
     reg [1:0]          rstate;
     reg [ID_WIDTH-1:0] rid_r;
     reg [3:0]          raddr_idx;
+<<<<<<< HEAD
     reg                r_valid_sent;  // rvalid has been held for at least 1 cycle
+=======
+>>>>>>> 64c88e06a437d5756a98d02e50ac7b47001c0389
 
     always @(posedge clk) begin
         if (rst) begin
@@ -156,14 +159,21 @@ module dummy_axi_slave #(
             s_axi_rresp   <= 2'b00;
             s_axi_rid     <= {ID_WIDTH{1'b0}};
             s_axi_rlast   <= 1'b0;
+<<<<<<< HEAD
             r_valid_sent  <= 1'b0;
+=======
+>>>>>>> 64c88e06a437d5756a98d02e50ac7b47001c0389
         end else begin
             s_axi_arready <= 1'b0;
 
             case (rstate)
                 R_IDLE: begin
+<<<<<<< HEAD
                     s_axi_rvalid  <= 1'b0;
                     r_valid_sent  <= 1'b0;
+=======
+                    s_axi_rvalid <= 1'b0;
+>>>>>>> 64c88e06a437d5756a98d02e50ac7b47001c0389
                     if (s_axi_arvalid) begin
                         s_axi_arready <= 1'b1;
                         rid_r         <= s_axi_arid;
@@ -173,18 +183,28 @@ module dummy_axi_slave #(
                 end
 
                 R_RESP: begin
+<<<<<<< HEAD
                     // Assert rvalid + data (holds until rready seen after rvalid)
+=======
+                    s_axi_arready <= 1'b0;
+>>>>>>> 64c88e06a437d5756a98d02e50ac7b47001c0389
                     s_axi_rvalid  <= 1'b1;
                     s_axi_rdata   <= mem[raddr_idx];
                     s_axi_rresp   <= 2'b00;
                     s_axi_rid     <= rid_r;
                     s_axi_rlast   <= 1'b1;
+<<<<<<< HEAD
                     r_valid_sent  <= 1'b1;
                     // Only complete handshake after rvalid has been seen for >= 1 cycle
                     if (r_valid_sent && s_axi_rready) begin
                         s_axi_rvalid <= 1'b0;
                         s_axi_rlast  <= 1'b0;
                         r_valid_sent <= 1'b0;
+=======
+                    if (s_axi_rready) begin
+                        s_axi_rvalid <= 1'b0;
+                        s_axi_rlast  <= 1'b0;
+>>>>>>> 64c88e06a437d5756a98d02e50ac7b47001c0389
                         rstate       <= R_IDLE;
                     end
                 end
