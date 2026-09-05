@@ -17,7 +17,7 @@ module dummy_axi_slave #(
     parameter DATA_WIDTH  = 32,
     parameter ADDR_WIDTH  = 32,
     parameter ID_WIDTH    = 8,
-    parameter SLAVE_INDEX = 0        // appears in lower 16 bits of read data
+    parameter SLAVE_INDEX = 0
 )(
     input  wire                    clk,
     input  wire                    rst,
@@ -75,13 +75,14 @@ module dummy_axi_slave #(
     // Internal storage (word-addressed, 16 words deep)
     reg [DATA_WIDTH-1:0] mem [0:15];
 
-    // ── Write FSM ───────────────────────────────────────────────────────
+    // Write FSM
     localparam W_IDLE = 2'd0, W_DATA = 2'd1, W_RESP = 2'd2;
-    reg [1:0]         wstate;
-    reg [ID_WIDTH-1:0] wid;
-    reg [3:0]          waddr_idx;
+    reg [1:0]           wstate;
+    reg [ID_WIDTH-1:0]  wid;
+    reg [3:0]            waddr_idx;
 
     integer i;
+
     initial begin
         for (i = 0; i < 16; i = i + 1)
             mem[i] = {16'hDEAD, SLAVE_INDEX[15:0]};
@@ -100,12 +101,15 @@ module dummy_axi_slave #(
             s_axi_wready  <= 1'b0;
 
             case (wstate)
+
                 W_IDLE: begin
                     s_axi_bvalid <= 1'b0;
+
                     if (s_axi_awvalid) begin
                         s_axi_awready <= 1'b1;
                         wid           <= s_axi_awid;
                         waddr_idx     <= s_axi_awaddr[5:2];
+
                         if (s_axi_wvalid) begin
                             s_axi_wready <= 1'b1;
                             mem[s_axi_awaddr[5:2]] <= s_axi_wdata;
@@ -118,37 +122,37 @@ module dummy_axi_slave #(
 
                 W_DATA: begin
                     if (s_axi_wvalid) begin
-                        s_axi_wready           <= 1'b1;
-                        mem[waddr_idx]         <= s_axi_wdata;
-                        wstate                 <= W_RESP;
+                        s_axi_wready <= 1'b1;
+                        mem[waddr_idx] <= s_axi_wdata;
+                        wstate <= W_RESP;
                     end
                 end
 
                 W_RESP: begin
-                    s_axi_wready  <= 1'b0;
-                    s_axi_bvalid  <= 1'b1;
-                    s_axi_bresp   <= 2'b00;   // OKAY
-                    s_axi_bid     <= wid;
+                    s_axi_wready <= 1'b0;
+                    s_axi_bvalid <= 1'b1;
+                    s_axi_bresp  <= 2'b00;
+                    s_axi_bid    <= wid;
+
                     if (s_axi_bready) begin
                         s_axi_bvalid <= 1'b0;
-                        wstate       <= W_IDLE;
+                        wstate <= W_IDLE;
                     end
                 end
 
-                default: wstate <= W_IDLE;
+                default:
+                    wstate <= W_IDLE;
+
             endcase
         end
     end
 
-    // ── Read FSM ────────────────────────────────────────────────────────
+    // Read FSM
     localparam R_IDLE = 2'd0, R_RESP = 2'd1;
-    reg [1:0]          rstate;
-    reg [ID_WIDTH-1:0] rid_r;
-    reg [3:0]          raddr_idx;
-<<<<<<< HEAD
-    reg                r_valid_sent;  // rvalid has been held for at least 1 cycle
-=======
->>>>>>> 64c88e06a437d5756a98d02e50ac7b47001c0389
+    reg [1:0]           rstate;
+    reg [ID_WIDTH-1:0]  rid_r;
+    reg [3:0]           raddr_idx;
+    reg                 r_valid_sent;
 
     always @(posedge clk) begin
         if (rst) begin
@@ -159,21 +163,16 @@ module dummy_axi_slave #(
             s_axi_rresp   <= 2'b00;
             s_axi_rid     <= {ID_WIDTH{1'b0}};
             s_axi_rlast   <= 1'b0;
-<<<<<<< HEAD
             r_valid_sent  <= 1'b0;
-=======
->>>>>>> 64c88e06a437d5756a98d02e50ac7b47001c0389
         end else begin
             s_axi_arready <= 1'b0;
 
             case (rstate)
+
                 R_IDLE: begin
-<<<<<<< HEAD
-                    s_axi_rvalid  <= 1'b0;
-                    r_valid_sent  <= 1'b0;
-=======
                     s_axi_rvalid <= 1'b0;
->>>>>>> 64c88e06a437d5756a98d02e50ac7b47001c0389
+                    r_valid_sent <= 1'b0;
+
                     if (s_axi_arvalid) begin
                         s_axi_arready <= 1'b1;
                         rid_r         <= s_axi_arid;
@@ -183,33 +182,25 @@ module dummy_axi_slave #(
                 end
 
                 R_RESP: begin
-<<<<<<< HEAD
-                    // Assert rvalid + data (holds until rready seen after rvalid)
-=======
-                    s_axi_arready <= 1'b0;
->>>>>>> 64c88e06a437d5756a98d02e50ac7b47001c0389
-                    s_axi_rvalid  <= 1'b1;
-                    s_axi_rdata   <= mem[raddr_idx];
-                    s_axi_rresp   <= 2'b00;
-                    s_axi_rid     <= rid_r;
-                    s_axi_rlast   <= 1'b1;
-<<<<<<< HEAD
-                    r_valid_sent  <= 1'b1;
-                    // Only complete handshake after rvalid has been seen for >= 1 cycle
+                    s_axi_rvalid <= 1'b1;
+                    s_axi_rdata  <= mem[raddr_idx];
+                    s_axi_rresp  <= 2'b00;
+                    s_axi_rid    <= rid_r;
+                    s_axi_rlast  <= 1'b1;
+
+                    r_valid_sent <= 1'b1;
+
                     if (r_valid_sent && s_axi_rready) begin
                         s_axi_rvalid <= 1'b0;
                         s_axi_rlast  <= 1'b0;
                         r_valid_sent <= 1'b0;
-=======
-                    if (s_axi_rready) begin
-                        s_axi_rvalid <= 1'b0;
-                        s_axi_rlast  <= 1'b0;
->>>>>>> 64c88e06a437d5756a98d02e50ac7b47001c0389
                         rstate       <= R_IDLE;
                     end
                 end
 
-                default: rstate <= R_IDLE;
+                default:
+                    rstate <= R_IDLE;
+
             endcase
         end
     end

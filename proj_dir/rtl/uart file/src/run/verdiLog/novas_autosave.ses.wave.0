@@ -1,0 +1,84 @@
+Magic 271485
+Revision Verdi_U-2023.03-SP1
+
+; Window Layout <x> <y> <width> <height> <signalwidth> <valuewidth>
+viewPort 0 25 1600 733 167 141
+
+; File list:
+; openDirFile [-d delimiter] [-s time_offset] [-rf auto_bus_rule_file] path_name file_name
+openDirFile -d / "" "/home/student/Documents/1602-23-735-311/axi-lite_uart-ipcore-develop/src/run/uart_sim.fsdb"
+
+; file time scale:
+; fileTimeScale ### s|ms|us|ns|ps
+
+; signal spacing:
+signalSpacing 5
+
+; windowTimeUnit is used for zoom, cursor & marker
+; waveform viewport range
+zoom 0.000000 10226250.000000
+cursor 1785000.000000
+marker 0.000000
+
+; user define markers
+; userMarker time_pos marker_name color linestyle
+; visible top row signal index
+top 0
+; marker line index
+markerPos 9
+
+; event list
+; addEvent event_name event_expression
+; curEvent event_name
+
+
+
+COMPLEX_EVENT_BEGIN
+
+
+COMPLEX_EVENT_END
+
+
+
+; toolbar current search type
+; curSTATUS search_type
+curSTATUS ByChange
+
+
+addGroup "G1"
+activeDirFile "" "/home/student/Documents/1602-23-735-311/axi-lite_uart-ipcore-develop/src/run/uart_sim.fsdb"
+addSignal -h 15 /tb_axi_uart/dut/uart_controller_inst/uart_transmitter_inst/busy
+addSignal -h 15 -UNSIGNED -UDEC -holdScope counter_int[31:0]
+addSignal -h 15 -holdScope tx
+addSignal -h 15 -UNSIGNED -HEX -holdScope tx_data_i[7:0]
+addSignal -h 15 -holdScope tx_ready
+addSignal -h 15 -UNSIGNED -UDEC /tb_axi_uart/dut/uart_controller_inst/uart_receiver_inst/counter_int[31:0]
+addSignal -h 15 -holdScope rx
+addSignal -h 15 -UNSIGNED -HEX -holdScope rx_data[7:0]
+addSignal -h 15 -holdScope rx_valid
+addGroup "G2"
+
+; getSignalForm Scope Hierarchy Status
+; active file of getSignalForm
+activeDirFile "" "/home/student/Documents/1602-23-735-311/axi-lite_uart-ipcore-develop/src/run/uart_sim.fsdb"
+
+GETSIGNALFORM_SCOPE_HIERARCHY_BEGIN
+getSignalForm close
+
+"/tb_axi_uart"
+"/tb_axi_uart/dut"
+"/tb_axi_uart/dut/uart_controller_inst"
+"/tb_axi_uart/dut/uart_controller_inst/uart_transmitter_inst"
+
+SCOPE_LIST_BEGIN
+"/tb_axi_uart"
+"/tb_axi_uart/dut/axi_internal_fifo_rx_inst"
+"/tb_axi_uart/dut/uart_controller_inst/uart_transmitter_inst"
+"/tb_axi_uart/dut"
+"/tb_axi_uart/dut/uart_controller_inst"
+"/tb_axi_uart/dut/uart_controller_inst/uart_receiver_inst"
+SCOPE_LIST_END
+
+GETSIGNALFORM_SCOPE_HIERARCHY_END
+
+
