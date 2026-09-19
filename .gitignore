@@ -1,63 +1,98 @@
-# Simulation generated files
-*.vcd
-*.fsdb
-*.wlf
+# ==========================================
+# Aegis-V-SoC / RISC-V / HDL .gitignore
+# ==========================================
+
+# --- Synopsys VCS ---
+simv
+simv.daidir/
+simv.vdb/
+csrc/
+ucli.key
+vc_hdrs.h
+AN.DB/
+DVEfiles/
 *.vpd
 *.log
-*.jou
-*.history
-*.key
-*.dump
-*.swp
-*.swo
-*~
 
-# VCS / Synopsys generated files
-proj_dir/run/simv
-proj_dir/run/simv.daidir/
-proj_dir/run/csrc/
-proj_dir/run/AN.DB/
-proj_dir/run/verdiLog/
-proj_dir/run/novas_dump.log
-proj_dir/run/dump.fsdb
-proj_dir/run/ucli.key
-proj_dir/run/vc_hdrs.*
-proj_dir/run/verdi_config_file
+# --- Synopsys Verdi ---
+*.fsdb
+verdiLog/
+VerdiLog/
+novas_autosave.rc
+novas.rc
+novas.conf
 
-# Other generated simulation databases
-*.sdb
-*.kdb
-*.so
-*.o
-*.a
-*.db
+# --- Cadence Tools (Xcelium / Virtuoso) ---
+xcelium.d/
+INCA_libs/
+*.shm
+*.trn
+*.cdslck
 
-# Verilator
+# --- Generic HDL Simulation Artifacts ---
 obj_dir/
-coverage/
+*.vcd
+*.fst
+*.lxt
+work/
+transcript
+*.wlf
 
-# Python
+# --- Python & Cocotb Verification ---
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+.pytest_cache/
+.venv/
+env/
+venv/
 
-# Editor
-.vscode/
-.idea/
+# --- Xilinx / AMD Vivado ---
+*.Xil/
+*.cache/
+*.hw/
+*.ip_user_files/
+*.gen/
+*.runs/
+*.sim/
+*.bit
+*.mcs
+*.prm
+*.bin
+*.ltx
+*.hwdef
+vivado*.jou
+vivado*.log
+webtalk*.jou
+webtalk*.log
+hs_err_pid*
 
-# OS
+# --- Intel / Altera Quartus ---
+db/
+incremental_db/
+output_files/
+simulation/
+*.qws
+*.sof
+*.pof
+*.jam
+*.jbc
+
+# --- Build & Output Directories ---
+build/
+dist/
+bin/
+out/
+
+# --- Software Test / RISC-V Toolchain Binaries ---
+*.elf
+*.hex
+*.disasm
+
+# --- OS & IDE Files ---
 .DS_Store
 Thumbs.db
-
-# Temporary generated files
-*.tmp
-*.bak
-*.orig
-# Verdi configuration files
-proj_dir/run/novas.conf
-proj_dir/run/novas.rc
-proj_dir/tb/*.rc
-EOF
-
-
-
-y
+.vscode/
+.idea/
+*.swp
+*.swo
