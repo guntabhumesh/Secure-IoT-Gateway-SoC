@@ -1,0 +1,195 @@
+# ============================================================
+# tb_axi_interconnect_2x11.rc
+# Verdi/nWave signal list file
+#
+# Load in Verdi:
+#   verdi -sv +incdir+../rtl/i2c-master \
+#         -f ../run/run.f \
+#         -ssf dump.fsdb \
+#         -rcFile tb_axi_interconnect_2x11.rc &
+#
+# Or inside nWave GUI:
+#   File > Load Signal List > select this file
+# ============================================================
+
+# ──────────────────────────────────────────────────────────────────
+# GROUP 1: Clock & Reset
+# ──────────────────────────────────────────────────────────────────
+group {Clock & Reset} {
+    {tb_axi_interconnect_2x11.clk}
+    {tb_axi_interconnect_2x11.rst}
+}
+
+# ──────────────────────────────────────────────────────────────────
+# GROUP 2: Transaction Tracking (waveform annotations)
+#   txn_num    : which of the 5 transactions is active (1-5)
+#   txn_phase  : 0=IDLE 1=AW 2=W 3=B 4=AR 5=R
+#   txn_result : 0=IDLE 1=PASS 2=FAIL 3=TIMEOUT
+# ──────────────────────────────────────────────────────────────────
+group {Transaction Monitor} {
+    {tb_axi_interconnect_2x11.txn_num}    -radix unsigned
+    {tb_axi_interconnect_2x11.txn_phase}  -radix unsigned
+    {tb_axi_interconnect_2x11.txn_result} -radix unsigned
+}
+
+# ──────────────────────────────────────────────────────────────────
+# GROUP 3: AXI Master s00 — Write Path (AW + W + B channels)
+# WHAT TO VERIFY:
+#   - awvalid rises then awready goes high → AW handshake
+#   - awaddr shows the correct target address
+#   - wvalid + wready both high → data accepted
+#   - wdata shows 0x63 / 0x00 / 0x80 for W1/W2/W3
+#   - bvalid goes high, bresp = 00 (OKAY)
+# ──────────────────────────────────────────────────────────────────
+group {s00 AXI Write (AW channel)} {
+    {tb_axi_interconnect_2x11.s00_axi_awvalid}
+    {tb_axi_interconnect_2x11.s00_axi_awready}
+    {tb_axi_interconnect_2x11.s00_axi_awaddr}  -radix hex
+    {tb_axi_interconnect_2x11.s00_axi_awid}    -radix hex
+    {tb_axi_interconnect_2x11.s00_axi_awlen}   -radix unsigned
+    {tb_axi_interconnect_2x11.s00_axi_awsize}  -radix unsigned
+    {tb_axi_interconnect_2x11.s00_axi_awburst} -radix unsigned
+}
+
+group {s00 AXI Write (W channel)} {
+    {tb_axi_interconnect_2x11.s00_axi_wvalid}
+    {tb_axi_interconnect_2x11.s00_axi_wready}
+    {tb_axi_interconnect_2x11.s00_axi_wdata}   -radix hex
+    {tb_axi_interconnect_2x11.s00_axi_wstrb}   -radix hex
+    {tb_axi_interconnect_2x11.s00_axi_wlast}
+}
+
+group {s00 AXI Write (B channel)} {
+    {tb_axi_interconnect_2x11.s00_axi_bvalid}
+    {tb_axi_interconnect_2x11.s00_axi_bready}
+    {tb_axi_interconnect_2x11.s00_axi_bresp}   -radix unsigned
+    {tb_axi_interconnect_2x11.s00_axi_bid}     -radix hex
+}
+
+# ──────────────────────────────────────────────────────────────────
+# GROUP 4: AXI Master s00 — Read Path (AR + R channels)
+# WHAT TO VERIFY:
+#   - arvalid rises, arready goes high → AR handshake
+#   - araddr = 0x00 (PRER_LO) for R1, 0x08 (CTR) for R2
+#   - rvalid + rready both high → read data accepted
+#   - rdata[7:0] = 0x63 for R1, 0x80 for R2
+#   - rresp = 00 (OKAY)
+# ──────────────────────────────────────────────────────────────────
+group {s00 AXI Read (AR channel)} {
+    {tb_axi_interconnect_2x11.s00_axi_arvalid}
+    {tb_axi_interconnect_2x11.s00_axi_arready}
+    {tb_axi_interconnect_2x11.s00_axi_araddr}  -radix hex
+    {tb_axi_interconnect_2x11.s00_axi_arid}    -radix hex
+    {tb_axi_interconnect_2x11.s00_axi_arlen}   -radix unsigned
+}
+
+group {s00 AXI Read (R channel)} {
+    {tb_axi_interconnect_2x11.s00_axi_rvalid}
+    {tb_axi_interconnect_2x11.s00_axi_rready}
+    {tb_axi_interconnect_2x11.s00_axi_rdata}   -radix hex
+    {tb_axi_interconnect_2x11.s00_axi_rresp}   -radix unsigned
+    {tb_axi_interconnect_2x11.s00_axi_rlast}
+    {tb_axi_interconnect_2x11.s00_axi_rid}     -radix hex
+}
+
+# ──────────────────────────────────────────────────────────────────
+# GROUP 5: Write Snapshots (captured at handshake)
+# ──────────────────────────────────────────────────────────────────
+group {Write Transaction Snapshots} {
+    {tb_axi_interconnect_2x11.wr_addr_snap}  -radix hex
+    {tb_axi_interconnect_2x11.wr_data_snap}  -radix hex
+    {tb_axi_interconnect_2x11.wr_bresp_snap} -radix unsigned
+}
+
+# ──────────────────────────────────────────────────────────────────
+# GROUP 6: Read Snapshots
+# ──────────────────────────────────────────────────────────────────
+group {Read Transaction Snapshots} {
+    {tb_axi_interconnect_2x11.rd_addr_snap}  -radix hex
+    {tb_axi_interconnect_2x11.rd_data_snap}  -radix hex
+    {tb_axi_interconnect_2x11.rd_exp_snap}   -radix hex
+    {tb_axi_interconnect_2x11.rd_rresp_snap} -radix unsigned
+}
+
+# ──────────────────────────────────────────────────────────────────
+# GROUP 7: Interconnect → m00 AXI (what the interconnect issues)
+# WHAT TO VERIFY:
+#   - m00_awvalid/awready mirror s00_awvalid/awready (after routing)
+#   - m00_awaddr equals s00_awaddr (interconnect passes address through)
+#   - m00_wdata, m00_wvalid, m00_wready as expected
+#   - m00_bvalid, m00_bresp returned by bridge
+# ──────────────────────────────────────────────────────────────────
+group {m00 AXI Write (interconnect->bridge)} {
+    {tb_axi_interconnect_2x11.m00_axi_awvalid}
+    {tb_axi_interconnect_2x11.m00_axi_awready}
+    {tb_axi_interconnect_2x11.m00_axi_awaddr}  -radix hex
+    {tb_axi_interconnect_2x11.m00_axi_wvalid}
+    {tb_axi_interconnect_2x11.m00_axi_wready}
+    {tb_axi_interconnect_2x11.m00_axi_wdata}   -radix hex
+    {tb_axi_interconnect_2x11.m00_axi_bvalid}
+    {tb_axi_interconnect_2x11.m00_axi_bready}
+    {tb_axi_interconnect_2x11.m00_axi_bresp}   -radix unsigned
+}
+
+group {m00 AXI Read (interconnect->bridge)} {
+    {tb_axi_interconnect_2x11.m00_axi_arvalid}
+    {tb_axi_interconnect_2x11.m00_axi_arready}
+    {tb_axi_interconnect_2x11.m00_axi_araddr}  -radix hex
+    {tb_axi_interconnect_2x11.m00_axi_rvalid}
+    {tb_axi_interconnect_2x11.m00_axi_rready}
+    {tb_axi_interconnect_2x11.m00_axi_rdata}   -radix hex
+    {tb_axi_interconnect_2x11.m00_axi_rresp}   -radix unsigned
+}
+
+# ──────────────────────────────────────────────────────────────────
+# GROUP 8: Wishbone Bus (bridge → i2c_master_top)
+# WHAT TO VERIFY:
+#   - wb_cyc + wb_stb both high for the duration of each cycle
+#   - wb_we = 1 for writes, 0 for reads
+#   - wb_adr shows register index (0=PRER_LO, 1=PRER_HI, 2=CTR)
+#   - wb_dat_mosi shows write data (0x63, 0x00, 0x80)
+#   - wb_ack goes high one cycle after stb (i2c ack)
+#   - wb_dat_miso shows read data on ack cycle
+# ──────────────────────────────────────────────────────────────────
+group {Wishbone Bus (bridge->i2c)} {
+    {tb_axi_interconnect_2x11.wb_cyc}
+    {tb_axi_interconnect_2x11.wb_stb}
+    {tb_axi_interconnect_2x11.wb_we}
+    {tb_axi_interconnect_2x11.wb_ack}
+    {tb_axi_interconnect_2x11.wb_adr}       -radix unsigned
+    {tb_axi_interconnect_2x11.wb_dat_mosi}  -radix hex
+    {tb_axi_interconnect_2x11.wb_dat_miso}  -radix hex
+}
+
+# ──────────────────────────────────────────────────────────────────
+# GROUP 9: i2c_master_top internal registers (via hierarchy)
+# WHAT TO VERIFY:
+#   - prer = 0x0063 after W1+W2
+#   - ctr  = 0x80   after W3 (EN bit set)
+#   - sr[1] (TIP) inactive (no I2C transfer commanded)
+# ──────────────────────────────────────────────────────────────────
+group {i2c_master Internal Registers} {
+    {tb_axi_interconnect_2x11.u_i2c_master.prer}  -radix hex
+    {tb_axi_interconnect_2x11.u_i2c_master.ctr}   -radix hex
+    {tb_axi_interconnect_2x11.u_i2c_master.txr}   -radix hex
+    {tb_axi_interconnect_2x11.u_i2c_master.rxr}   -radix hex
+    {tb_axi_interconnect_2x11.u_i2c_master.cr}    -radix hex
+    {tb_axi_interconnect_2x11.u_i2c_master.sr}    -radix hex
+    {tb_axi_interconnect_2x11.u_i2c_master.core_en}
+    {tb_axi_interconnect_2x11.u_i2c_master.tip}
+}
+
+# ──────────────────────────────────────────────────────────────────
+# GROUP 10: I2C Pad Lines
+# WHAT TO VERIFY:
+#   - scl_pad_i / sda_pad_i stay high (bus idle) during register config
+#   - No spurious start/stop conditions
+# ──────────────────────────────────────────────────────────────────
+group {I2C Pad Lines} {
+    {tb_axi_interconnect_2x11.scl_pad_i}
+    {tb_axi_interconnect_2x11.scl_pad_o}
+    {tb_axi_interconnect_2x11.scl_padoen_o}
+    {tb_axi_interconnect_2x11.sda_pad_i}
+    {tb_axi_interconnect_2x11.sda_pad_o}
+    {tb_axi_interconnect_2x11.sda_padoen_o}
+}

@@ -6,7 +6,7 @@
 // Address map (each window = 2^24 = 16 MB):
 //   m00  0x0000_0000  axi_to_wb_bridge → i2c_master_top
 //   m01  0x0100_0000  axi_aes_slave    → aes_cipher_top + aes_inv_cipher_top
-//   m02  0x0200_0000  dummy_axi_slave
+//   m02  0x0200_0000  axi_uart_slave   → axi_uart_top (AXI4-Lite UART)
 //   m03  0x0300_0000  dummy_axi_slave
 //   m04  0x0400_0000  dummy_axi_slave
 //   m05  0x0500_0000  dummy_axi_slave
@@ -117,7 +117,12 @@ module soc_top #(
     output wire        sda_padoen_o,
 
     // ── Interrupt (from I2C) ──────────────────────────────────────────
-    output wire        i2c_irq
+    output wire        i2c_irq,
+
+    // ── UART external signals ─────────────────────────────────────────
+    output wire        uart_tx_o,
+    input  wire        uart_rx_i,
+    output wire        uart_irq
 );
 
     // Active-high reset for logic that needs it
@@ -170,7 +175,28 @@ module soc_top #(
     wire [1:0] m01_rresp;             wire m01_rlast;
     wire [0:0] m01_ruser;             wire m01_rvalid; wire m01_rready;
 
-    // ── m02-m10 dummy slaves (macro to declare wires) ─────────────────
+    // ── m02 (UART slave) ──────────────────────────────────────────────
+    wire [ID_WIDTH-1:0]   m02_awid;   wire [ADDR_WIDTH-1:0] m02_awaddr;
+    wire [7:0] m02_awlen;             wire [2:0] m02_awsize;
+    wire [1:0] m02_awburst;           wire m02_awlock;
+    wire [3:0] m02_awcache;           wire [2:0] m02_awprot;
+    wire [3:0] m02_awqos;             wire [3:0] m02_awregion;
+    wire [0:0] m02_awuser;            wire m02_awvalid; wire m02_awready;
+    wire [DATA_WIDTH-1:0] m02_wdata;  wire [STRB_WIDTH-1:0] m02_wstrb;
+    wire m02_wlast; wire [0:0] m02_wuser; wire m02_wvalid; wire m02_wready;
+    wire [ID_WIDTH-1:0] m02_bid;      wire [1:0] m02_bresp;
+    wire [0:0] m02_buser;             wire m02_bvalid; wire m02_bready;
+    wire [ID_WIDTH-1:0] m02_arid;     wire [ADDR_WIDTH-1:0] m02_araddr;
+    wire [7:0] m02_arlen;             wire [2:0] m02_arsize;
+    wire [1:0] m02_arburst;           wire m02_arlock;
+    wire [3:0] m02_arcache;           wire [2:0] m02_arprot;
+    wire [3:0] m02_arqos;             wire [3:0] m02_arregion;
+    wire [0:0] m02_aruser;            wire m02_arvalid; wire m02_arready;
+    wire [ID_WIDTH-1:0] m02_rid;      wire [DATA_WIDTH-1:0] m02_rdata;
+    wire [1:0] m02_rresp;             wire m02_rlast;
+    wire [0:0] m02_ruser;             wire m02_rvalid; wire m02_rready;
+
+    // ── m03-m10 dummy slaves (macro to declare wires) ─────────────────
 `define MXX_WIRES(N) \
     wire [ID_WIDTH-1:0]   m``N``_awid;   wire [ADDR_WIDTH-1:0] m``N``_awaddr;  \
     wire [7:0] m``N``_awlen;             wire [2:0] m``N``_awsize;              \
@@ -192,7 +218,7 @@ module soc_top #(
     wire [1:0] m``N``_rresp;             wire m``N``_rlast;                     \
     wire [0:0] m``N``_ruser;             wire m``N``_rvalid;  wire m``N``_rready;
 
-`MXX_WIRES(02) `MXX_WIRES(03) `MXX_WIRES(04) `MXX_WIRES(05)
+`MXX_WIRES(03) `MXX_WIRES(04) `MXX_WIRES(05)
 `MXX_WIRES(06) `MXX_WIRES(07) `MXX_WIRES(08) `MXX_WIRES(09)
 `MXX_WIRES(10)
 
@@ -306,7 +332,7 @@ module soc_top #(
         .m01_axi_rid(m01_rid), .m01_axi_rdata(m01_rdata), .m01_axi_rresp(m01_rresp),
         .m01_axi_rlast(m01_rlast), .m01_axi_ruser(m01_ruser),
         .m01_axi_rvalid(m01_rvalid), .m01_axi_rready(m01_rready),
-        // m02-m10 (condensed)
+        // m02 (UART)
         .m02_axi_awid(m02_awid),.m02_axi_awaddr(m02_awaddr),.m02_axi_awlen(m02_awlen),
         .m02_axi_awsize(m02_awsize),.m02_axi_awburst(m02_awburst),.m02_axi_awlock(m02_awlock),
         .m02_axi_awcache(m02_awcache),.m02_axi_awprot(m02_awprot),.m02_axi_awqos(m02_awqos),
@@ -324,6 +350,7 @@ module soc_top #(
         .m02_axi_rid(m02_rid),.m02_axi_rdata(m02_rdata),.m02_axi_rresp(m02_rresp),
         .m02_axi_rlast(m02_rlast),.m02_axi_ruser(m02_ruser),
         .m02_axi_rvalid(m02_rvalid),.m02_axi_rready(m02_rready),
+        // m03-m10 (dummy slaves)
         .m03_axi_awid(m03_awid),.m03_axi_awaddr(m03_awaddr),.m03_axi_awlen(m03_awlen),
         .m03_axi_awsize(m03_awsize),.m03_axi_awburst(m03_awburst),.m03_axi_awlock(m03_awlock),
         .m03_axi_awcache(m03_awcache),.m03_axi_awprot(m03_awprot),.m03_axi_awqos(m03_awqos),
@@ -504,7 +531,7 @@ module soc_top #(
     i2c_master_top u_i2c (
         .wb_clk_i     (clk),
         .wb_rst_i     (rst),
-        .arst_i       (1'b1),
+        .arst_i       (rst),
         .wb_adr_i     (wb_adr),
         .wb_dat_i     (wb_dat_m2s),
         .wb_dat_o     (wb_dat_s2m),
@@ -554,7 +581,42 @@ module soc_top #(
     );
 
     // ══════════════════════════════════════════════════════════════════
-    // m02-m10: Dummy AXI slaves
+    // m02: AXI UART slave
+    // ══════════════════════════════════════════════════════════════════
+    axi_uart_slave #(
+        .DATA_WIDTH (DATA_WIDTH),
+        .ADDR_WIDTH (ADDR_WIDTH),
+        .ID_WIDTH   (ID_WIDTH)
+    ) u_uart (
+        .s_axi_aclk    (clk),
+        .s_axi_aresetn (rst_n),
+        .s_axi_awid    (m02_awid),    .s_axi_awaddr  (m02_awaddr),
+        .s_axi_awlen   (m02_awlen),   .s_axi_awsize  (m02_awsize),
+        .s_axi_awburst (m02_awburst), .s_axi_awlock  (m02_awlock),
+        .s_axi_awcache (m02_awcache), .s_axi_awprot  (m02_awprot),
+        .s_axi_awqos   (m02_awqos),   .s_axi_awregion(m02_awregion),
+        .s_axi_awvalid (m02_awvalid), .s_axi_awready (m02_awready),
+        .s_axi_wdata   (m02_wdata),   .s_axi_wstrb   (m02_wstrb),
+        .s_axi_wlast   (m02_wlast),   .s_axi_wvalid  (m02_wvalid),
+        .s_axi_wready  (m02_wready),
+        .s_axi_bid     (m02_bid),     .s_axi_bresp   (m02_bresp),
+        .s_axi_bvalid  (m02_bvalid),  .s_axi_bready  (m02_bready),
+        .s_axi_arid    (m02_arid),    .s_axi_araddr  (m02_araddr),
+        .s_axi_arlen   (m02_arlen),   .s_axi_arsize  (m02_arsize),
+        .s_axi_arburst (m02_arburst), .s_axi_arlock  (m02_arlock),
+        .s_axi_arcache (m02_arcache), .s_axi_arprot  (m02_arprot),
+        .s_axi_arqos   (m02_arqos),   .s_axi_arregion(m02_arregion),
+        .s_axi_arvalid (m02_arvalid), .s_axi_arready (m02_arready),
+        .s_axi_rid     (m02_rid),     .s_axi_rdata   (m02_rdata),
+        .s_axi_rresp   (m02_rresp),   .s_axi_rlast   (m02_rlast),
+        .s_axi_rvalid  (m02_rvalid),  .s_axi_rready  (m02_rready),
+        .uart_tx_o     (uart_tx_o),
+        .uart_rx_i     (uart_rx_i),
+        .uart_irq_o    (uart_irq)
+    );
+
+    // ══════════════════════════════════════════════════════════════════
+    // m03-m10: Dummy AXI slaves
     // ══════════════════════════════════════════════════════════════════
 `define DUMMY_INST(N,IDX) \
     dummy_axi_slave #(.SLAVE_INDEX(IDX)) u_dummy_``N ( \
@@ -581,9 +643,9 @@ module soc_top #(
         .s_axi_rvalid(m``N``_rvalid),.s_axi_rready(m``N``_rready) \
     );
 
-    `DUMMY_INST(02, 2)  `DUMMY_INST(03, 3)  `DUMMY_INST(04, 4)
-    `DUMMY_INST(05, 5)  `DUMMY_INST(06, 6)  `DUMMY_INST(07, 7)
-    `DUMMY_INST(08, 8)  `DUMMY_INST(09, 9)  `DUMMY_INST(10,10)
+    `DUMMY_INST(03, 3)  `DUMMY_INST(04, 4)  `DUMMY_INST(05, 5)
+    `DUMMY_INST(06, 6)  `DUMMY_INST(07, 7)  `DUMMY_INST(08, 8)
+    `DUMMY_INST(09, 9)  `DUMMY_INST(10,10)
 
 endmodule
 
