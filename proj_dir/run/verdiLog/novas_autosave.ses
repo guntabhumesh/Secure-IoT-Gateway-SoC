@@ -25,16 +25,11 @@ fdb_proj =
 fdb_campaign = 
 fdb_tool = 
 [hb]
-postSimFile = /home/student/Documents/1602-23-735-311/secure_iot_gateway_SoC/proj_dir/run/dump_soc_uart.fsdb
-syncTime = 675000
-viewport = 0 26 1600 836 0 0 79 1598
-activeNode = "tb_soc_top"
-activeScope = "tb_soc_top"
-activeFile = "../tb/tb_soc_top.v"
+viewport = 0 26 1600 836 0 0 79 877
 interactiveMode = False
 viewType = Source
 simulatorMode = False
-sourceBeginLine = 49
+sourceBeginLine = 0
 baMode = False
 srcLineNum = True
 AutoWrap = True
@@ -51,25 +46,12 @@ DnDtraceCrossHierOnly = True
 leadingZero = False
 signalPane = False
 SourceVerticalScrollLines = 5
-Scope1 = "tb_soc_top"
-multipleSelection = 1 49 2 0 0
 sdfCheckUndef = FALSE
 simFlow = FALSE
-[hb.design]
-importCmd = "-dbdir" "/home/student/Documents/1602-23-735-311/secure_iot_gateway_SoC/proj_dir/run/simv.daidir" 
-invokeDir = /home/student/Documents/1602-23-735-311/secure_iot_gateway_SoC/proj_dir/run
-[hb.sourceTab.1]
-scope = tb_soc_top
-File = /home/student/Documents/1602-23-735-311/secure_iot_gateway_SoC/proj_dir/tb/tb_soc_top.v
-Line = 50
-[nMemoryManager]
-WaveformFile = /home/student/Documents/1602-23-735-311/secure_iot_gateway_SoC/proj_dir/run/dump_soc_uart.fsdb
-UserActionNum = 0
-nMemWindowNum = 0
 [wave.0]
-viewPort = 0 25 1600 733 230 100
+viewPort = 0 25 1600 107 230 334
 primaryWindow = TRUE
-SessionFile = /home/student/Documents/1602-23-735-311/secure_iot_gateway_SoC/proj_dir/run/verdiLog/novas_autosave.ses.wave.0
+Empty = /home/student/Documents/1602-23-735-311/secure_iot_gateway_SoC/proj_dir/run/verdiLog/novas_autosave.ses.wave.0
 displayGrid = FALSE
 hierarchicalName = FALSE
 snap = TRUE

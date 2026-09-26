@@ -224,6 +224,7 @@ Orientation = Landscape
 LoadSimulationResults = "\"/home/student/Documents/1602-23-735-311/dump.fsdb\"" "\"/home/student/Documents/1602-23-735-311/proj_dir/run/dump.fsdb\"" "\"/home/student/Documents/1602-23-735-311/secure_iot_gateway_SoC/proj_dir/run/tb_aes_core.fsdb\"" "\"/home/student/Documents/1602-\
 23-735-311/secure_iot_gateway_SoC/proj_dir/run/dump.fsdb\"" "\"/home/student/Documents/1602-23-735-311/secure_iot_gateway_SoC/proj_dir/run/dump4.fsdb\"" "\"/home/student/Documents/1602-23-735-311/secure_iot_gateway_SoC/proj_dir/run/dump5.fsdb\"" "\"/home/s\
 tudent/Documents/1602-23-735-311/secure_iot_gateway_SoC/proj_dir/run/dump6.fsdb\"" "\"/home/student/Documents/1602-23-735-311/secure_iot_gateway_SoC/proj_dir/run/dump_soc_uart.fsdb\""
+nWaveRestoreRCDirHistory = "\"/home/student/Documents/1602-23-735-311/secure_iot_gateway_SoC/proj_dir/signal.rc\""
 [Form]
 version = Verdi_U-2023.03-SP1
 [General]
@@ -377,12 +378,14 @@ savePropStat = FALSE
 savePropDtl = TRUE
 [QtDialog]
 SetWindowTimeUnitDialog = 573,432,433,84
-QwWarnMsgDlg = 490,446,600,250
+tipViewerDlg = 600,333,398,259
 openFileDlg = 498,239,602,483
 saveSigDlg = 523,288,551,386
-QwUserAskDlg = 638,415,324,134
-qWaveSignalDialog = 777,64,800,479
 loadFile = 501,302,595,357
+restoreSigDlg = 523,262,551,438
+qWaveSignalDialog = 399,241,800,479
+QwWarnMsgDlg = 490,557,600,250
+QwUserAskDlg = 638,417,324,130
 [Relationship]
 hideRecursiceNode = FALSE
 [Safety]
@@ -670,38 +673,38 @@ viaLogViewerDefaultRuleOneSearchForm = "share/VIA/Apps/PredefinedRules/Misc/Ones
 [VIA.oneSearch.preference]
 DefaultDisplayTimeUnit = "1.000000ns"
 DefaultLogTimeUnit = "1.000000ns"
-isOneSearchVisible = FALSE
+isOneSearchVisible = TRUE
 [VIA.oneSearch.preference.vgifColumnSettingRC]
 [VIA.oneSearch.preference.vgifColumnSettingRC.setting0]
 parRuleSets = ""
 [VIA.oneSearch.preference.vgifColumnSettingRC.setting0.column0]
-name = Message
-width = 2000
-visualIndex = 4
-isHidden = FALSE
-isUserChangeColumnVisible = FALSE
-[VIA.oneSearch.preference.vgifColumnSettingRC.setting0.column1]
-name = Time
-width = 60
-visualIndex = 0
-isHidden = TRUE
-isUserChangeColumnVisible = FALSE
-[VIA.oneSearch.preference.vgifColumnSettingRC.setting0.column2]
-name = Severity
-width = 60
-visualIndex = 1
-isHidden = TRUE
-isUserChangeColumnVisible = FALSE
-[VIA.oneSearch.preference.vgifColumnSettingRC.setting0.column3]
 name = Code
 width = 60
 visualIndex = 2
 isHidden = TRUE
 isUserChangeColumnVisible = FALSE
-[VIA.oneSearch.preference.vgifColumnSettingRC.setting0.column4]
+[VIA.oneSearch.preference.vgifColumnSettingRC.setting0.column1]
 name = Type
 width = 60
 visualIndex = 3
+isHidden = TRUE
+isUserChangeColumnVisible = FALSE
+[VIA.oneSearch.preference.vgifColumnSettingRC.setting0.column2]
+name = Message
+width = 2000
+visualIndex = 4
+isHidden = FALSE
+isUserChangeColumnVisible = FALSE
+[VIA.oneSearch.preference.vgifColumnSettingRC.setting0.column3]
+name = Time
+width = 60
+visualIndex = 0
+isHidden = TRUE
+isUserChangeColumnVisible = FALSE
+[VIA.oneSearch.preference.vgifColumnSettingRC.setting0.column4]
+name = Severity
+width = 60
+visualIndex = 1
 isHidden = TRUE
 isUserChangeColumnVisible = FALSE
 [Vi]
@@ -785,8 +788,8 @@ AutoApplySeverityColor = TRUE
 scope_to_save_with_macro
 open_file_dir
 open_rc_file_dir
-getSignalForm = 777 27 800 479 373 381 377 183
-viewPort = 0 25 1600 733 230 100
+getSignalForm = 399 241 800 479 373 381 377 183
+viewPort = 0 25 1600 107 230 334
 legendBackground = -c ID_BLACK
 valueBackground = -c ID_BLACK
 curveBackground = -c ID_BLACK
@@ -952,11 +955,11 @@ printBasic = 1 0 0 FALSE FALSE
 printDest = -printer {}
 printSignature = {%f %h %t} {}
 curveWindow_Drag&Drop_Mode = TRUE
-RecentFile1 = "\"/home/student/Documents/1602-23-735-311/secure_iot_gateway_SoC/proj_dir/run/dump_soc_uart.fsdb\""
-RecentFile2 = "\"/home/student/Documents/1602-23-735-311/secure_iot_gateway_SoC/proj_dir/run/dump6.fsdb\""
-RecentFile3 = "\"/home/student/Documents/1602-23-735-311/secure_iot_gateway_SoC/proj_dir/run/dump4.fsdb\""
-RecentFile4 = "\"/home/student/Documents/1602-23-735-311/secure_iot_gateway_SoC/proj_dir/run/dump5.fsdb\""
-RecentFile5 = "\"/home/student/Documents/1602-23-735-311/secure_iot_gateway_SoC/proj_dir/run/dump.fsdb\""
+RecentFile1 = "\"/home/student/Documents/1602-23-735-311/secure_iot_gateway_SoC/proj_dir/signal.rc\""
+RecentFile2 = "\"/home/student/Documents/1602-23-735-311/secure_iot_gateway_SoC/proj_dir/run/dump_soc_uart.fsdb\""
+RecentFile3 = "\"/home/student/Documents/1602-23-735-311/secure_iot_gateway_SoC/proj_dir/run/dump6.fsdb\""
+RecentFile4 = "\"/home/student/Documents/1602-23-735-311/secure_iot_gateway_SoC/proj_dir/run/dump4.fsdb\""
+RecentFile5 = "\"/home/student/Documents/1602-23-735-311/secure_iot_gateway_SoC/proj_dir/run/dump5.fsdb\""
 open_file_time_range = FALSE
 legend_window_font = -f COURIER12 -c ID_CYAN5
 value_window_font = -f COURIER12 -c ID_CYAN5
@@ -1322,7 +1325,7 @@ AddImportArgument = FALSE
 LineBreakWithScope = TRUE
 StopAfterCompileOption = -s
 [wave.0]
-viewPort = 0 25 1600 733 230 100
+viewPort = 0 25 1600 107 230 334
 [wave.1]
 viewPort = 127 219 960 332 100 65
 [wave.2]
