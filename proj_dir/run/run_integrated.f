@@ -43,7 +43,7 @@
 
 // ── Include paths ──────────────────────────────────────────────────────────
 +incdir+../rtl/i2c-master
-+incdir+../rtl/aes_core-master/rtl/verilog
++incdir+../rtl/aes_core-master/rtl
 
 // ── RTL: AXI Interconnect ──────────────────────────────────────────────────
 ../rtl/interconnect/axi_interconnect.v
@@ -58,17 +58,17 @@
 
 // ── RTL: AES Core ─────────────────────────────────────────────────────────
 // Timescale header (included by AES RTL via `include "timescale.v")
-../rtl/aes_core-master/rtl/verilog/timescale.v
+../rtl/aes_core-master/rtl/timescale.v
 
 // Sub-modules first
-../rtl/aes_core-master/rtl/verilog/aes_rcon.v
-../rtl/aes_core-master/rtl/verilog/aes_sbox.v
-../rtl/aes_core-master/rtl/verilog/aes_inv_sbox.v
-../rtl/aes_core-master/rtl/verilog/aes_key_expand_128.v
+../rtl/aes_core-master/rtl/aes_rcon.v
+../rtl/aes_core-master/rtl/aes_sbox.v
+../rtl/aes_core-master/rtl/aes_inv_sbox.v
+../rtl/aes_core-master/rtl/aes_key_expand_128.v
 
 // Cipher top levels
-../rtl/aes_core-master/rtl/verilog/aes_cipher_top.v
-../rtl/aes_core-master/rtl/verilog/aes_inv_cipher_top.v
+../rtl/aes_core-master/rtl/aes_cipher_top.v
+../rtl/aes_core-master/rtl/aes_inv_cipher_top.v
 
 // ── TB support modules ──────────────────────────────────────────────────────
 ../tb/axi_to_wb_bridge.v

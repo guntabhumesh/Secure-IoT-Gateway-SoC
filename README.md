@@ -93,8 +93,12 @@ The VeeR LSU AXI data bus is fixed at 64 bits by the core; the SoC bus is 32 bit
 
 ## Diagrams
 <p align="center">
+<p align="center">
   <a href="https://github.com/guntabhumesh/Secure-IoT-Gateway-SoC/blob/main/proj_dir/doc/blockdiagram.png">
     <img src="https://github.com/guntabhumesh/Secure-IoT-Gateway-SoC/raw/main/proj_dir/doc/blockdiagram.png" alt="SOC block diagram" width="500"/>
+  </a>
+  <br/><sub>SOC block diagram</sub>
+</p>
   </a>
   <br/><sub>AXI‑Lite UART IP block diagram (see also the source <code>.vsdx</code> in <a href="https://github.com/guntabhumesh/Secure-IoT-Gateway-SoC/tree/main/proj_dir/doc/uart">doc/uart/</a>)</sub>
 </p>

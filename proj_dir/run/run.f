@@ -32,4 +32,4 @@
 ../tb/dummy_axi_slave.v
 
 // ── Testbench top ───────────────────────────────────────────────────────────
-../tb/tb_axi_interconnect_2x11.v
+../tb/tb_axi_interconnect_2x11_aes.v

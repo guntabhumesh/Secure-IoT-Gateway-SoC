@@ -38,7 +38,7 @@
 // -----------------------------------------------------------------------------
 // Include directories
 // -----------------------------------------------------------------------------
-+incdir+../../../rtl/verilog
++incdir+../../../rtl
 +incdir+../../../bench/verilog
 
 // -----------------------------------------------------------------------------
@@ -46,19 +46,19 @@
 // -----------------------------------------------------------------------------
 
 // Timescale
-../../../rtl/verilog/timescale.v
+../../../rtl/timescale.v
 
 // Primitives
-../../../rtl/verilog/aes_rcon.v
-../../../rtl/verilog/aes_sbox.v
-../../../rtl/verilog/aes_inv_sbox.v
+../../../rtl/aes_rcon.v
+../../../rtl/aes_sbox.v
+../../../rtl/aes_inv_sbox.v
 
 // Sub-modules
-../../../rtl/verilog/aes_key_expand_128.v
+../../../rtl/aes_key_expand_128.v
 
 // Top-level DUT modules
-../../../rtl/verilog/aes_cipher_top.v
-../../../rtl/verilog/aes_inv_cipher_top.v
+../../../rtl/aes_cipher_top.v
+../../../rtl/aes_inv_cipher_top.v
 
 // -----------------------------------------------------------------------------
 // Testbench

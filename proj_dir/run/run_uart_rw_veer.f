@@ -1,34 +1,51 @@
 // =============================================================================
-// run_soc_veer.f  -  VCS filelist for Secure IoT Gateway SoC + VeeR EL2
+// run_uart_rw_veer.f  -  VCS filelist for UART R/W verification
+//
+// DUT      : soc_top_with_veer  (VeeR EL2 + AXI interconnect + I2C/AES/UART)
+// Testbench: tb_uart_rw_veer
+// Firmware : ../scripts/uart_rw_iccm_words.hex  (uart_rw.c linked at 0xEE000000)
 //
 // Run from:  proj_dir/run/
 //
-// Quick compile+sim:
-//   vcs -sverilog -full64 -f run_soc_veer.f -o simv_soc_veer \
+// Quick compile + simulate:
+//   vcs -sverilog -full64 -f run_uart_rw_veer.f -o simv_uart_rw \
+//       +define+RV_BUILD_AXI4                    \
+//       +define+RV_BUILD_AXI_NATIVE              \
+//       +define+ICCM_HIER_LOAD                   \
 //       -P ${VERDI_HOME}/share/PLI/VCS/LINUX64/novas.tab \
 //          ${VERDI_HOME}/share/PLI/VCS/LINUX64/pli.a \
-//       2>&1 | tee compile_soc_veer.log
-//   ./simv_soc_veer | tee sim_soc_veer.log
+//       2>&1 | tee compile_uart_rw.log
+//   ./simv_uart_rw +hex_file+../scripts/uart_rw.hex 2>&1 | tee sim_uart_rw.log
 //
 // Open waveform:
-//   verdi -f run_soc_veer.f -ssf dump_soc_veer.fsdb &
+//   verdi -f run_uart_rw_veer.f -ssf dump_uart_rw.fsdb &
+//
+// Notes:
+//   +define+ICCM_HIER_LOAD  : enables direct $readmemh into ICCM RAM arrays
+//                             inside el2_ifu_iccm_mem via hierarchical path.
+//                             Remove if your ICCM is not a plain reg array.
+//   +define+ICCM_HEX_FILE=\"../scripts/uart_rw.hex\"
+//                           : alternative — pre-load via RTL `initial block
+//                             inside el2_ifu_iccm_mem (requires RTL support).
+//   snapshots/default       : generated VeeR config headers (see veer.config).
+//                             Must be regenerated if VeeR parameters change.
 // =============================================================================
 
-// ── 1. Generated VeeR config headers (from veer.config -snapshot=default) ──
-//    common_defines.vh  : `defines for bus type, tag widths, memory sizes
-//    el2_pdef.vh        : parameter struct typedef (el2_param_t)
-//    el2_param.vh       : parameter block instantiated in el2_veer_wrapper
+// ── 1. Generated VeeR config headers ────────────────────────────────────────
+//    common_defines.vh  : bus-type, tag-width, ICCM/DCCM size defines
+//    el2_pdef.vh        : el2_param_t struct typedef
+//    el2_param.vh       : parameter block (included by el2_veer_wrapper)
 +incdir+./snapshots/default
 
-// ── 2. VeeR EL2 design include directory (SVH files) ────────────────────────
+// ── 2. VeeR EL2 design include directory (SVH / VH files) ───────────────────
 +incdir+../rtl/Cores-VeeR-EL2/design/include
 
-// ── 3. VeeR EL2 design source files  (order matches Cores-VeeR-EL2/design/flist)
+// ── 3. VeeR EL2 design source files  (order matches design/flist) ───────────
 
-// Assertion macros (must come before packages that use them)
+// Assertion macros (must come before packages)
 ../rtl/Cores-VeeR-EL2/design/lib/el2_assert.sv
 
-// Package / defines (must come first)
+// Packages / defines (must come first)
 ../rtl/Cores-VeeR-EL2/design/include/el2_def.sv
 ../rtl/Cores-VeeR-EL2/design/el2_mubi_pkg.sv
 ../rtl/Cores-VeeR-EL2/design/el2_lockstep_pkg.sv
@@ -44,7 +61,7 @@
 ../rtl/Cores-VeeR-EL2/design/lib/ahb_to_axi4.sv
 ../rtl/Cores-VeeR-EL2/design/lib/axi4_to_ahb.sv
 
-// IFU (instruction fetch unit)
+// IFU (instruction fetch unit) — includes ICCM memory
 ../rtl/Cores-VeeR-EL2/design/ifu/el2_ifu_aln_ctl.sv
 ../rtl/Cores-VeeR-EL2/design/ifu/el2_ifu_compress_ctl.sv
 ../rtl/Cores-VeeR-EL2/design/ifu/el2_ifu_ifc_ctl.sv
@@ -54,7 +71,7 @@
 ../rtl/Cores-VeeR-EL2/design/ifu/el2_ifu_iccm_mem.sv
 ../rtl/Cores-VeeR-EL2/design/ifu/el2_ifu.sv
 
-// DEC (decode)
+// DEC (decode unit)
 ../rtl/Cores-VeeR-EL2/design/dec/el2_dec_decode_ctl.sv
 ../rtl/Cores-VeeR-EL2/design/dec/el2_dec_gpr_ctl.sv
 ../rtl/Cores-VeeR-EL2/design/dec/el2_dec_ib_ctl.sv
@@ -82,7 +99,7 @@
 ../rtl/Cores-VeeR-EL2/design/lsu/el2_lsu_trigger.sv
 ../rtl/Cores-VeeR-EL2/design/lsu/el2_lsu.sv
 
-// DBG / DMI (debug)
+// DBG / DMI (debug interface)
 ../rtl/Cores-VeeR-EL2/design/dbg/el2_dbg.sv
 ../rtl/Cores-VeeR-EL2/design/dmi/dmi_mux.v
 ../rtl/Cores-VeeR-EL2/design/dmi/dmi_wrapper.v
@@ -95,11 +112,11 @@
 ../rtl/Cores-VeeR-EL2/design/el2_dma_ctrl.sv
 ../rtl/Cores-VeeR-EL2/design/el2_mem.sv
 
-// Core top  and  lockstep wrapper
+// Core top and lockstep wrapper
 ../rtl/Cores-VeeR-EL2/design/el2_veer.sv
 ../rtl/Cores-VeeR-EL2/design/el2_veer_lockstep.sv
 
-// VeeR top wrapper  (includes el2_param.vh via `include)
+// VeeR top-level wrapper  (includes el2_param.vh via `include directive)
 ../rtl/Cores-VeeR-EL2/design/el2_veer_wrapper.sv
 
 // ── 4. AXI Interconnect ──────────────────────────────────────────────────────
@@ -114,7 +131,7 @@
 +incdir+../rtl/aes_core-master/rtl
 +incdir+../rtl/uartfiles/src/include
 
-// ── 6. I2C master (Wishbone) ─────────────────────────────────────────────────
+// ── 6. I2C master (Wishbone interface) ──────────────────────────────────────
 ../rtl/i2c-master/i2c_master_top.v
 ../rtl/i2c-master/i2c_master_byte_ctrl.v
 ../rtl/i2c-master/i2c_master_bit_ctrl.v
@@ -128,7 +145,7 @@
 ../rtl/aes_core-master/rtl/aes_cipher_top.v
 ../rtl/aes_core-master/rtl/aes_inv_cipher_top.v
 
-// ── 8. UART  (via symlink uartfiles → "uart file") ───────────────────────────
+// ── 8. UART  (via symlink: uartfiles → "uart file") ─────────────────────────
 ../rtl/uartfiles/src/rtl/uart_parity_bit_compute.v
 ../rtl/uartfiles/src/rtl/uart_controller.v
 ../rtl/uartfiles/src/rtl/uart_transmitter.v
@@ -136,14 +153,14 @@
 ../rtl/uartfiles/src/rtl/axi_internal_fifo.v
 ../rtl/uartfiles/src/rtl/axi_uart_top.v
 
-// ── 9. SoC peripheral slaves ─────────────────────────────────────────────────
+// ── 9. SoC peripheral slaves (AXI wrappers) ─────────────────────────────────
 ../rtl/aes_core-master/rtl/axi_aes_slave.v
 ../rtl/uartfiles/src/rtl/axi_uart_slave.v
 
-// ── 10. Original SoC top (instantiated inside soc_top_with_veer) ─────────────
+// ── 10. SoC interconnect top (instantiates I2C/AES/UART slaves) ─────────────
 ../rtl/interconnect/soc_top.v
 
-// ── 11. Integrated SoC + VeeR top ────────────────────────────────────────────
+// ── 11. Integrated SoC + VeeR top-level ─────────────────────────────────────
 ../rtl/top/soc_top_with_veer.v
 
 // ── 12. TB support files ─────────────────────────────────────────────────────
@@ -151,5 +168,5 @@
 ../tb/dummy_axi_slave.v
 
 // ── 13. Testbench top ────────────────────────────────────────────────────────
-// tb_soc_veer_top: loads firmware into ICCM, monitors VeeR trace + UART output
-../tb/tb_soc_veer_top.v
+//    tb_uart_rw_veer: UART loopback test with uart_rw.hex
+../tb/tb_uart_rw_veer.v
