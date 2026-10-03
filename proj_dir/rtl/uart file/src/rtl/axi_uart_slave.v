@@ -181,9 +181,56 @@ module axi_uart_slave #(
     assign s_axi_rlast = s_axi_rvalid;
 
     // ══════════════════════════════════════════════════════════════════
+    // AR-channel buffer
+    //
+    // axi_uart_top gates axi_rvalid_o with (axi_rden & ~axi_sync_rden),
+    // where axi_rden = axi_arvalid_i.  When the upstream master's
+    // arvalid drops after arready fires (one-cycle handshake), axi_rden
+    // goes low and rvalid_o is suppressed — the response is silently
+    // dropped and VeeR's LSU stalls forever waiting for rvalid.
+    //
+    // Fix: buffer the AR beat and hold uart_arvalid_i asserted to the
+    // UART core for the entire duration of the read transaction, i.e.
+    // until rvalid+rready both complete.
+    // ══════════════════════════════════════════════════════════════════
+
+    reg               ar_buf_valid;    // AR beat is buffered / in-flight
+    reg [4:0]         ar_buf_addr;     // buffered araddr[4:0]
+    reg [11:0]        ar_buf_id;       // buffered arid (12-bit for UART)
+
+    wire uart_rvalid_o;
+    wire uart_rready_i = s_axi_rready;
+
+    // Accept a new AR beat only when no read is currently in-flight
+    assign s_axi_arready = !ar_buf_valid;
+
+    always @(posedge s_axi_aclk or negedge s_axi_aresetn) begin
+        if (!s_axi_aresetn) begin
+            ar_buf_valid <= 1'b0;
+            ar_buf_addr  <= 5'b0;
+            ar_buf_id    <= 12'b0;
+        end else begin
+            if (s_axi_arvalid && !ar_buf_valid) begin
+                // Latch new AR beat — hold it until R-handshake completes
+                ar_buf_valid <= 1'b1;
+                ar_buf_addr  <= s_axi_araddr[4:0];
+                ar_buf_id    <= {{(12-ID_WIDTH){1'b0}}, s_axi_arid};
+            end else if (ar_buf_valid && uart_rvalid_o && uart_rready_i) begin
+                // R-handshake complete — release buffer
+                ar_buf_valid <= 1'b0;
+            end
+        end
+    end
+
+    // Present a stable arvalid + araddr to the UART core for the whole
+    // duration of the buffered transaction
+    wire        uart_arvalid_i = ar_buf_valid;
+    wire [4:0]  uart_araddr_i  = ar_buf_addr;
+    wire [11:0] uart_arid_i    = ar_buf_id;
+
+    // ══════════════════════════════════════════════════════════════════
     // axi_uart_top instantiation
     // ══════════════════════════════════════════════════════════════════
-    wire [11:0] uart_arid_i = {{(12-ID_WIDTH){1'b0}}, s_axi_arid};
 
     axi_uart_top u_uart (
         // Clocks – both tied to system clock (single-clock domain)
@@ -209,18 +256,18 @@ module axi_uart_slave #(
         .axi_bvalid_o   (s_axi_bvalid),
         .axi_bready_i   (s_axi_bready),
 
-        // ── Read address ───────────────────────────────────────────
+        // ── Read address (from AR buffer — held until R completes) ─
         .axi_arid_i     (uart_arid_i),
-        .axi_araddr_i   (s_axi_araddr[4:0]),
-        .axi_arvalid_i  (s_axi_arvalid),
+        .axi_araddr_i   (uart_araddr_i),
+        .axi_arvalid_i  (uart_arvalid_i),
         .axi_arready_o  (uart_arready_o),
 
         // ── Read data ──────────────────────────────────────────────
         .axi_rid_o      (),           // rid returned from latch above
         .axi_rdata_o    (s_axi_rdata),
         .axi_rresp_o    (s_axi_rresp),
-        .axi_rvalid_o   (s_axi_rvalid),
-        .axi_rready_i   (s_axi_rready),
+        .axi_rvalid_o   (uart_rvalid_o),
+        .axi_rready_i   (uart_rready_i),
 
         // ── UART physical ──────────────────────────────────────────
         .uart_tx_o          (uart_tx_o),
@@ -228,8 +275,8 @@ module axi_uart_slave #(
         .read_interrupt_o   (uart_irq_o)
     );
 
-    // AR ready feeds straight back to interconnect
-    assign s_axi_arready = uart_arready_o;
+    // rvalid passes through to interconnect
+    assign s_axi_rvalid = uart_rvalid_o;
 
 endmodule
 

@@ -201,10 +201,13 @@ module soc_top_with_veer #(
     //
     //  Rules:
     //   • AW/AR : pass through (address is 32-bit already, ID padded/truncated)
-    //   • W     : forward only wdata[31:0] / wstrb[3:0]
-    //             The CPU must issue 32-bit (awsize=2) MMIO writes only.
+    //   • W     : select the correct 32-bit lane based on awaddr[2].
+    //             VeeR aligns AXI addresses to 8-byte boundaries; for a 32-bit
+    //             store at offset[2]=1 (e.g. 0x0C, 0x14 ...) the data is placed
+    //             in wdata[63:32] / wstrb[7:4].  For offset[2]=0 it is in
+    //             wdata[31:0] / wstrb[3:0].
     //   • B     : pass through
-    //   • R     : rdata[63:32] returned as 0 to core
+    //   • R     : rdata[63:32] returned as 0 to core (reads always word-aligned)
     //
     //  ID width mismatch: interconnect s00 uses ID_WIDTH=8, VeeR uses 3.
     //  Pad VeeR's 3-bit ID to 8-bit on master → slave direction,
@@ -213,7 +216,14 @@ module soc_top_with_veer #(
 
     // s00 wires (32-bit, ID_WIDTH=8)
     wire [ID_WIDTH-1:0]    s00_awid    = {{(ID_WIDTH-VEER_ID){1'b0}}, lsu_axi_awid};
-    wire [ADDR_WIDTH-1:0]  s00_awaddr  = lsu_axi_awaddr;
+    // VeeR 64→32 write lane detection:
+    // VeeR aligns AXI awaddr to 8-byte boundaries.  A 32-bit store to an
+    // upper-word address (e.g. 0x0200000C → awaddr=0x02000008, wstrb=0xf0)
+    // places data in wdata[63:32]/wstrb[7:4].  Detect this via wstrb upper
+    // nibble and correct both the address (+4) and the data lane forwarded.
+    wire lsu_upper_w                   = |lsu_axi_wstrb[7:4];
+    wire lsu_w_needs_adj               = lsu_upper_w & ~lsu_axi_awaddr[2]; // only add +4 for non-sideeffect (8B-aligned awaddr)
+    wire [ADDR_WIDTH-1:0]  s00_awaddr  = lsu_w_needs_adj ? (lsu_axi_awaddr + 32'd4) : lsu_axi_awaddr;
     wire [7:0]             s00_awlen   = lsu_axi_awlen;
     wire [2:0]             s00_awsize  = lsu_axi_awsize;
     wire [1:0]             s00_awburst = lsu_axi_awburst;
@@ -225,8 +235,8 @@ module soc_top_with_veer #(
     wire                   s00_awready;
     assign lsu_axi_awready             = s00_awready;
 
-    wire [DATA_WIDTH-1:0]  s00_wdata   = lsu_axi_wdata[31:0];  // lower 32 only
-    wire [DATA_WIDTH/8-1:0]s00_wstrb   = lsu_axi_wstrb[3:0];   // lower 4 only
+    wire [DATA_WIDTH-1:0]  s00_wdata   = lsu_upper_w ? lsu_axi_wdata[63:32] : lsu_axi_wdata[31:0];
+    wire [DATA_WIDTH/8-1:0]s00_wstrb   = lsu_upper_w ? lsu_axi_wstrb[7:4]  : lsu_axi_wstrb[3:0];
     wire                   s00_wlast   = lsu_axi_wlast;
     wire                   s00_wvalid  = lsu_axi_wvalid;
     wire                   s00_wready;
@@ -260,7 +270,12 @@ module soc_top_with_veer #(
     wire                   s00_rvalid;
     wire                   s00_rready  = lsu_axi_rready;
     assign lsu_axi_rid                 = s00_rid[VEER_ID-1:0];
-    assign lsu_axi_rdata               = {32'h0, s00_rdata};   // zero-extend to 64-bit
+    // Return read data mirrored on both 32-bit halves.
+    // VeeR forces araddr[2:0]=0 (8-byte aligned) and internally uses obuf_addr[2]
+    // to select either rdata[31:0] or rdata[63:32].  Since the 32-bit peripheral
+    // always returns data in s00_rdata (lower half), we mirror it to [63:32] so
+    // VeeR gets the correct value whichever lane it samples.
+    assign lsu_axi_rdata               = {s00_rdata, s00_rdata};
     assign lsu_axi_rresp               = s00_rresp;
     assign lsu_axi_rlast               = s00_rlast;
     assign lsu_axi_rvalid              = s00_rvalid;
@@ -433,9 +448,24 @@ module soc_top_with_veer #(
     // =========================================================================
     // 6.  VeeR EL2 core instantiation
     // =========================================================================
-    el2_veer_wrapper
-    `include "el2_param.vh"         // expands to #( ... ) parameter block
-    u_veer (
+    // Real SRAM interface driven by behavioral SRAM models below.
+    // The el2_veer_wrapper exports ICCM/DCCM/ICache control signals through
+    // the el2_mem_if interface; we wire them to simple behavioral reg-array
+    // RAMs so that the core can read/write instruction and data memories.
+    //
+    // ICache stub: tie all read-data outputs to 0 so every tag lookup misses
+    // cleanly (icache bypass path always taken). Correct for ICCM-only sims.
+    el2_mem_if icache_stub_if ();
+    el2_mem_if real_sram_if ();
+
+    // Icache data read: wb_packeddout_pre, wb_dout_pre_up → return 0 (all miss)
+    assign icache_stub_if.wb_packeddout_pre  = '0;
+    assign icache_stub_if.wb_dout_pre_up     = '0;
+    // Icache tag read: ic_tag_data_raw_packed_pre, ic_tag_data_raw_pre → 0
+    assign icache_stub_if.ic_tag_data_raw_packed_pre = '0;
+    assign icache_stub_if.ic_tag_data_raw_pre        = '0;
+
+    el2_veer_wrapper u_veer (
         // Clocks & Reset
         .clk        (clk),
         .rst_l      (rst_l),
@@ -627,15 +657,47 @@ module soc_top_with_veer #(
         // Soft interrupt — tie off
         .soft_int   (1'b0),
 
-        // CCM SRAM control sideband — tie off
-        .iccm_ext_in_pkt  ({$bits(el2_pkg::el2_ccm_ext_in_pkt_t){1'b0}}),
-        .dccm_ext_in_pkt  ({$bits(el2_pkg::el2_dccm_ext_in_pkt_t){1'b0}}),
-        .ic_data_ext_in_pkt ({$bits(el2_pkg::el2_ic_data_ext_in_pkt_t){1'b0}}),
-        .ic_tag_ext_in_pkt  ({$bits(el2_pkg::el2_ic_tag_ext_in_pkt_t){1'b0}}),
+        // MPC halt/run interface — MUST tie mpc_reset_run_req=1 so core
+        // starts running after reset (default 0 = halted after reset)
+        .mpc_debug_halt_req  (1'b0),
+        .mpc_debug_run_req   (1'b0),
+        .mpc_reset_run_req   (1'b1),   // ← critical: 1 = run after reset
+        .mpc_debug_halt_ack  (),
+        .mpc_debug_run_ack   (),
+
+        // CPU halt/run interface — tie off (no PMU in this SoC)
+        .i_cpu_halt_req  (1'b0),
+        .o_cpu_halt_ack  (),
+        .o_cpu_halt_status (),
+        .i_cpu_run_req   (1'b0),
+        .o_cpu_run_ack   (),
+        .o_debug_mode_status (),
 
         // Scan / clock-override — tie off
         .scan_mode   (1'b0),
-        .mbist_mode  (1'b0)
+        .mbist_mode  (1'b0),
+
+        // Clock enables (tie high to always enable bus clocks)
+        .lsu_bus_clk_en (1'b1),
+        .ifu_bus_clk_en (1'b1),
+        .dbg_bus_clk_en (1'b1),
+        .dma_bus_clk_en (1'b1),
+
+        // JTAG extensions
+        .jtag_trst_n (rst_n),
+        .jtag_tdoEn  (),
+        .core_id     (28'h0),
+
+        // Unused ECC status
+        .iccm_ecc_single_error (),
+        .iccm_ecc_double_error (),
+        .dccm_ecc_single_error (),
+        .dccm_ecc_double_error (),
+        .dccm_write_readback_error (),
+
+        // Export interfaces
+        .el2_icache_export (icache_stub_if),
+        .el2_mem_export    (real_sram_if)
     );
 
     // =========================================================================
@@ -743,6 +805,111 @@ module soc_top_with_veer #(
         .uart_rx_i  (uart_rx_i),
         .uart_irq   (uart_irq)
     );
+
+    // =========================================================================
+    // 8.  Behavioral ICCM / DCCM SRAM models
+    //
+    //  el2_veer_wrapper exports ICCM and DCCM memory control through
+    //  el2_mem_export (el2_mem_if).  In simulation we supply simple
+    //  synchronous-read behavioral reg-array RAMs for each bank so the
+    //  CPU can actually fetch instructions and load/store data.
+    //
+    //  ICCM: 4 banks x 4096 rows x 39 bits (32-bit data + 7-bit ECC)
+    //        Configured by RV_ICCM_NUM_BANKS_4 / RV_ICCM_ROWS = 4096
+    //        RV_ICCM_INDEX_BITS = 12  →  addr[13:2] = 12 bits → 4096 rows
+    //
+    //  DCCM: 4 banks x 4096 rows x 39 bits (32-bit data + 7-bit ECC)
+    //
+    //  The VCS +define+ICCM_HIER_LOAD path for the testbench is:
+    //    dut.Gen_iccm_enable.iccm_loop[N].iccm_bank.ram_core
+    //
+    //  NOTE: icache is also driven through el2_icache_export; we leave that
+    //  dummy because ICCM-mode firmware does not need the I$ to run.
+    // =========================================================================
+
+    // =========================================================================
+    // 8.  Behavioral ICCM / DCCM SRAM models
+    //
+    //  Uses the official VeeR EL2 ram_4096x39 behavioral model from mem_lib.sv
+    //  (already compiled via the -v ../rtl/Cores-VeeR-EL2/design/lib/mem_lib.sv
+    //  entry in the filelist).  This guarantees timing compatibility with VeeR.
+    //
+    //  ICCM: 4 banks × 4096 rows × 39 bits (32-bit data + 7-bit ECC)
+    //  DCCM: 4 banks × 4096 rows × 39 bits (32-bit data + 7-bit ECC)
+    //
+    //  Hierarchical path for TB $readmemh (data portion):
+    //    dut.Gen_iccm_enable.iccm_loop[N].iccm_bank.ram_core
+    // =========================================================================
+
+    // ------------------------------------------------------------------
+    // ICCM banks
+    // ------------------------------------------------------------------
+    localparam ICCM_ROWS  = `RV_ICCM_ROWS;
+    localparam DCCM_ROWS  = `RV_DCCM_ROWS;
+
+    // Registered ECC-with-data merged write data per bank
+    wire [`RV_ICCM_NUM_BANKS-1:0][38:0] iccm_wr_fdata;
+    wire [`RV_ICCM_NUM_BANKS-1:0][38:0] iccm_bank_fdout;
+    wire [`RV_DCCM_NUM_BANKS-1:0][38:0] dccm_wr_fdata;
+    wire [`RV_DCCM_NUM_BANKS-1:0][38:0] dccm_bank_fdout;
+
+    if (`RV_ICCM_ENABLE) begin : Gen_iccm_enable
+        for (genvar i = 0; i < `RV_ICCM_NUM_BANKS; i++) begin : iccm_loop
+            assign iccm_wr_fdata[i] = {real_sram_if.iccm_bank_wr_ecc[i],
+                                        real_sram_if.iccm_bank_wr_data[i]};
+
+            ram_4096x39 iccm_bank (
+                .CLK (real_sram_if.clk),
+                .ME  (real_sram_if.iccm_clken[i]),
+                .WE  (real_sram_if.iccm_wren_bank[i]),
+                .ADR (real_sram_if.iccm_addr_bank[i]),
+                .D   (iccm_wr_fdata[i]),
+                .Q   (iccm_bank_fdout[i]),
+                .ROP (),
+                .TEST1    (1'b0), .RME (1'b0), .RM (4'b0),
+                .LS (1'b0), .DS (1'b0), .SD (1'b0),
+                .TEST_RNM (1'b0), .BC1 (1'b0), .BC2 (1'b0)
+            );
+
+            assign real_sram_if.iccm_bank_dout[i] = iccm_bank_fdout[i][31:0];
+            assign real_sram_if.iccm_bank_ecc[i]  = iccm_bank_fdout[i][38:32];
+        end
+    end else begin : Gen_iccm_disable
+        assign real_sram_if.iccm_bank_dout = '0;
+        assign real_sram_if.iccm_bank_ecc  = '0;
+    end
+
+    // ------------------------------------------------------------------
+    // DCCM banks
+    // ------------------------------------------------------------------
+    if (`RV_DCCM_ENABLE) begin : Gen_dccm_enable
+        for (genvar j = 0; j < `RV_DCCM_NUM_BANKS; j++) begin : dccm_loop
+            assign dccm_wr_fdata[j] = {real_sram_if.dccm_wr_ecc_bank[j],
+                                        real_sram_if.dccm_wr_data_bank[j]};
+
+            ram_4096x39 dccm_bank (
+                .CLK (real_sram_if.clk),
+                .ME  (real_sram_if.dccm_clken[j]),
+                .WE  (real_sram_if.dccm_wren_bank[j]),
+                .ADR (real_sram_if.dccm_addr_bank[j]),
+                .D   (dccm_wr_fdata[j]),
+                .Q   (dccm_bank_fdout[j]),
+                .ROP (),
+                .TEST1    (1'b0), .RME (1'b0), .RM (4'b0),
+                .LS (1'b0), .DS (1'b0), .SD (1'b0),
+                .TEST_RNM (1'b0), .BC1 (1'b0), .BC2 (1'b0)
+            );
+
+            assign real_sram_if.dccm_bank_dout[j] = dccm_bank_fdout[j][31:0];
+            assign real_sram_if.dccm_bank_ecc[j]  = dccm_bank_fdout[j][38:32];
+        end
+    end else begin : Gen_dccm_disable
+        assign real_sram_if.dccm_bank_dout = '0;
+        assign real_sram_if.dccm_bank_ecc  = '0;
+    end
+
+    // NOTE: real_sram_if.clk is driven by el2_mem.sv internally
+    // (assign mem_export.clk = clk inside el2_mem) — do NOT drive it here.
 
 endmodule
 `default_nettype wire

@@ -383,7 +383,7 @@ module axi_uart_top (/*AUTOARG*/
     axi_bvalid_d            = axi_bvalid;
     axi_bresp_d             = axi_bresp;
     axi_bid_d               = axi_bid;
-    tx_fifo_reset_int_d     = tx_fifo_reset_int;
+    tx_fifo_reset_int_d     = 1'b0;          // default: deassert FIFO reset (only pulsed in ResetWriteState)
     tx_fifo_push_int_d      = tx_fifo_push_int;
     tx_fifo_data_in_int_d   = tx_fifo_data_in_int;
     uart_baudrate_div_int_d = uart_baudrate_div_int;

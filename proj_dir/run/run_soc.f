@@ -26,7 +26,7 @@
 // ──────────────────────────────────────────────────────────────────────────
 
 +incdir+../rtl/i2c-master
-+incdir+../rtl/aes_core-master/rtl/verilog
++incdir+../rtl/aes_core-master/rtl
 +incdir+../rtl/uartfiles/src/include
 
 // AXI Interconnect
@@ -41,13 +41,13 @@
 ../rtl/i2c-master/i2c_master_bit_ctrl.v
 
 // AES core RTL (primitives before top-levels)
-../rtl/aes_core-master/rtl/verilog/timescale.v
-../rtl/aes_core-master/rtl/verilog/aes_rcon.v
-../rtl/aes_core-master/rtl/verilog/aes_sbox.v
-../rtl/aes_core-master/rtl/verilog/aes_inv_sbox.v
-../rtl/aes_core-master/rtl/verilog/aes_key_expand_128.v
-../rtl/aes_core-master/rtl/verilog/aes_cipher_top.v
-../rtl/aes_core-master/rtl/verilog/aes_inv_cipher_top.v
+../rtl/aes_core-master/rtl/timescale.v
+../rtl/aes_core-master/rtl/aes_rcon.v
+../rtl/aes_core-master/rtl/aes_sbox.v
+../rtl/aes_core-master/rtl/aes_inv_sbox.v
+../rtl/aes_core-master/rtl/aes_key_expand_128.v
+../rtl/aes_core-master/rtl/aes_cipher_top.v
+../rtl/aes_core-master/rtl/aes_inv_cipher_top.v
 
 // UART RTL  (via uartfiles symlink → rtl/uart file)
 ../rtl/uartfiles/src/rtl/uart_parity_bit_compute.v
@@ -58,9 +58,9 @@
 ../rtl/uartfiles/src/rtl/axi_uart_top.v
 
 // SoC RTL
-../rtl/axi_aes_slave.v
-../rtl/axi_uart_slave.v
-../rtl/soc_top.v
+../rtl/aes_core-master/rtl/axi_aes_slave.v
+../rtl/uartfiles/src/rtl/axi_uart_slave.v
+../rtl/interconnect/soc_top.v
 
 // TB support
 ../tb/axi_to_wb_bridge.v
