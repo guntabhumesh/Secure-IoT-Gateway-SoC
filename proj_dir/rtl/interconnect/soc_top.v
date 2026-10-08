@@ -218,9 +218,31 @@ module soc_top #(
     wire [1:0] m``N``_rresp;             wire m``N``_rlast;                     \
     wire [0:0] m``N``_ruser;             wire m``N``_rvalid;  wire m``N``_rready;
 
+
+    // DMA Master wires (s02)
+    wire [ID_WIDTH-1:0]   s02_axi_awid;   wire [ADDR_WIDTH-1:0] s02_axi_awaddr;
+    wire [7:0] s02_axi_awlen;             wire [2:0] s02_axi_awsize;
+    wire [1:0] s02_axi_awburst;           wire s02_axi_awlock;
+    wire [3:0] s02_axi_awcache;           wire [2:0] s02_axi_awprot;
+    wire [3:0] s02_axi_awqos;             wire [3:0] s02_axi_awregion;
+    wire [0:0] s02_axi_awuser;            wire s02_axi_awvalid; wire s02_axi_awready;
+    wire [DATA_WIDTH-1:0] s02_axi_wdata;  wire [DATA_WIDTH/8-1:0] s02_axi_wstrb;
+    wire s02_axi_wlast; wire [0:0] s02_axi_wuser; wire s02_axi_wvalid; wire s02_axi_wready;
+    wire [ID_WIDTH-1:0] s02_axi_bid;      wire [1:0] s02_axi_bresp;
+    wire [0:0] s02_axi_buser;             wire s02_axi_bvalid; wire s02_axi_bready;
+    wire [ID_WIDTH-1:0] s02_axi_arid;     wire [ADDR_WIDTH-1:0] s02_axi_araddr;
+    wire [7:0] s02_axi_arlen;             wire [2:0] s02_axi_arsize;
+    wire [1:0] s02_axi_arburst;           wire s02_axi_arlock;
+    wire [3:0] s02_axi_arcache;           wire [2:0] s02_axi_arprot;
+    wire [3:0] s02_axi_arqos;             wire [3:0] s02_axi_arregion;
+    wire [0:0] s02_axi_aruser;            wire s02_axi_arvalid; wire s02_axi_arready;
+    wire [ID_WIDTH-1:0] s02_axi_rid;      wire [DATA_WIDTH-1:0] s02_axi_rdata;
+    wire [1:0] s02_axi_rresp;             wire s02_axi_rlast;
+    wire [0:0] s02_axi_ruser;             wire s02_axi_rvalid; wire s02_axi_rready;
+
 `MXX_WIRES(03) `MXX_WIRES(04) `MXX_WIRES(05)
 `MXX_WIRES(06) `MXX_WIRES(07) `MXX_WIRES(08) `MXX_WIRES(09)
-`MXX_WIRES(10)
+`MXX_WIRES(10) `MXX_WIRES(11)
 
     // ── Wishbone bus (bridge ↔ I2C master) ───────────────────────────
     wire [2:0] wb_adr;
@@ -231,7 +253,7 @@ module soc_top #(
     // ══════════════════════════════════════════════════════════════════
     // AXI Interconnect
     // ══════════════════════════════════════════════════════════════════
-    axi_interconnect_wrap_2x11 #(
+    axi_interconnect_wrap_3x12 #(
         .DATA_WIDTH  (DATA_WIDTH),
         .ADDR_WIDTH  (ADDR_WIDTH),
         .ID_WIDTH    (ID_WIDTH),
@@ -245,7 +267,8 @@ module soc_top #(
         .M07_BASE_ADDR (32'h0700_0000), .M07_ADDR_WIDTH ({1{32'd24}}),
         .M08_BASE_ADDR (32'h0800_0000), .M08_ADDR_WIDTH ({1{32'd24}}),
         .M09_BASE_ADDR (32'h0900_0000), .M09_ADDR_WIDTH ({1{32'd24}}),
-        .M10_BASE_ADDR (32'h0A00_0000), .M10_ADDR_WIDTH ({1{32'd24}})
+        .M10_BASE_ADDR (32'h0A00_0000), .M10_ADDR_WIDTH ({1{32'd24}}),
+        .M11_BASE_ADDR (32'h0B00_0000), .M11_ADDR_WIDTH ({1{32'd24}})
     ) u_ic (
         .clk  (clk), .rst (rst),
         // s00
@@ -646,6 +669,45 @@ module soc_top #(
     `DUMMY_INST(03, 3)  `DUMMY_INST(04, 4)  `DUMMY_INST(05, 5)
     `DUMMY_INST(06, 6)  `DUMMY_INST(07, 7)  `DUMMY_INST(08, 8)
     `DUMMY_INST(09, 9)  `DUMMY_INST(10,10)
+
+
+    wire dma_done;
+    wire dma_error;
+
+    dma_axi_wrapper_v #(
+        .DATA_WIDTH(DATA_WIDTH),
+        .ADDR_WIDTH(ADDR_WIDTH),
+        .ID_WIDTH(ID_WIDTH)
+    ) u_dma_wrapper_v (
+        .clk(clk),
+        .rst(~rst_n),
+        .csr_awid(m11_axi_awid), .csr_awaddr(m11_axi_awaddr), .csr_awprot(m11_axi_awprot),
+        .csr_awvalid(m11_axi_awvalid), .csr_awready(m11_axi_awready), .csr_wdata(m11_axi_wdata),
+        .csr_wstrb(m11_axi_wstrb), .csr_wvalid(m11_axi_wvalid), .csr_wready(m11_axi_wready),
+        .csr_bid(m11_axi_bid), .csr_bresp(m11_axi_bresp), .csr_bvalid(m11_axi_bvalid),
+        .csr_bready(m11_axi_bready), .csr_arid(m11_axi_arid), .csr_araddr(m11_axi_araddr),
+        .csr_arprot(m11_axi_arprot), .csr_arvalid(m11_axi_arvalid), .csr_arready(m11_axi_arready),
+        .csr_rid(m11_axi_rid), .csr_rdata(m11_axi_rdata), .csr_rresp(m11_axi_rresp),
+        .csr_rvalid(m11_axi_rvalid), .csr_rready(m11_axi_rready),
+        
+        .m_awid(s02_axi_awid), .m_awaddr(s02_axi_awaddr), .m_awlen(s02_axi_awlen),
+        .m_awsize(s02_axi_awsize), .m_awburst(s02_axi_awburst), .m_awlock(s02_axi_awlock),
+        .m_awcache(s02_axi_awcache), .m_awprot(s02_axi_awprot), .m_awqos(s02_axi_awqos),
+        .m_awregion(s02_axi_awregion), .m_awuser(s02_axi_awuser), .m_awvalid(s02_axi_awvalid),
+        .m_awready(s02_axi_awready), .m_wdata(s02_axi_wdata), .m_wstrb(s02_axi_wstrb),
+        .m_wlast(s02_axi_wlast), .m_wuser(s02_axi_wuser), .m_wvalid(s02_axi_wvalid),
+        .m_wready(s02_axi_wready), .m_bid(s02_axi_bid), .m_bresp(s02_axi_bresp),
+        .m_buser(s02_axi_buser), .m_bvalid(s02_axi_bvalid), .m_bready(s02_axi_bready),
+        .m_arid(s02_axi_arid), .m_araddr(s02_axi_araddr), .m_arlen(s02_axi_arlen),
+        .m_arsize(s02_axi_arsize), .m_arburst(s02_axi_arburst), .m_arlock(s02_axi_arlock),
+        .m_arcache(s02_axi_arcache), .m_arprot(s02_axi_arprot), .m_arqos(s02_axi_arqos),
+        .m_arregion(s02_axi_arregion), .m_aruser(s02_axi_aruser), .m_arvalid(s02_axi_arvalid),
+        .m_arready(s02_axi_arready), .m_rid(s02_axi_rid), .m_rdata(s02_axi_rdata),
+        .m_rresp(s02_axi_rresp), .m_rlast(s02_axi_rlast), .m_ruser(s02_axi_ruser),
+        .m_rvalid(s02_axi_rvalid), .m_rready(s02_axi_rready),
+        .dma_done(dma_done),
+        .dma_error(dma_error)
+    );
 
 endmodule
 

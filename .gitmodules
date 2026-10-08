@@ -1,0 +1,15 @@
+[submodule "proj_dir/rtl/Cores-VeeR-EL2"]
+    path = proj_dir/rtl/Cores-VeeR-EL2
+    url = https://github.com/chipsalliance/Cores-VeeR-EL2.git
+
+[submodule "proj_dir/rtl/axi_dma"]
+    path = proj_dir/rtl/axi_dma
+    url = https://github.com/aignacio/axi_dma.git
+
+[submodule "proj_dir/rtl/gpio"]
+    path = proj_dir/rtl/gpio
+    url = https://github.com/pulp-platform/gpio.git
+
+[submodule "proj_dir/rtl/IP_timer"]
+    path = proj_dir/rtl/IP_timer
+    url = https://github.com/anhducdinh/IP_timer.git

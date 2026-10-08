@@ -214,71 +214,136 @@ module soc_top_with_veer #(
     //  truncate back to 3-bit on slave → master responses.
     // =========================================================================
 
-    // s00 wires (32-bit, ID_WIDTH=8)
-    wire [ID_WIDTH-1:0]    s00_awid    = {{(ID_WIDTH-VEER_ID){1'b0}}, lsu_axi_awid};
-    // VeeR 64→32 write lane detection:
-    // VeeR aligns AXI awaddr to 8-byte boundaries.  A 32-bit store to an
-    // upper-word address (e.g. 0x0200000C → awaddr=0x02000008, wstrb=0xf0)
-    // places data in wdata[63:32]/wstrb[7:4].  Detect this via wstrb upper
-    // nibble and correct both the address (+4) and the data lane forwarded.
-    wire lsu_upper_w                   = |lsu_axi_wstrb[7:4];
-    wire lsu_w_needs_adj               = lsu_upper_w & ~lsu_axi_awaddr[2]; // only add +4 for non-sideeffect (8B-aligned awaddr)
-    wire [ADDR_WIDTH-1:0]  s00_awaddr  = lsu_w_needs_adj ? (lsu_axi_awaddr + 32'd4) : lsu_axi_awaddr;
-    wire [7:0]             s00_awlen   = lsu_axi_awlen;
-    wire [2:0]             s00_awsize  = lsu_axi_awsize;
-    wire [1:0]             s00_awburst = lsu_axi_awburst;
-    wire                   s00_awlock  = lsu_axi_awlock;
-    wire [3:0]             s00_awcache = lsu_axi_awcache;
-    wire [2:0]             s00_awprot  = lsu_axi_awprot;
-    wire [3:0]             s00_awqos   = lsu_axi_awqos;
-    wire                   s00_awvalid = lsu_axi_awvalid;
+    // S00 32-bit AXI Bus (from 64-to-32 adapter to interconnect)
+    wire [ID_WIDTH-1:0]    s00_awid;
+    wire [ADDR_WIDTH-1:0]  s00_awaddr;
+    wire [7:0]             s00_awlen;
+    wire [2:0]             s00_awsize;
+    wire [1:0]             s00_awburst;
+    wire                   s00_awlock;
+    wire [3:0]             s00_awcache;
+    wire [2:0]             s00_awprot;
+    wire [3:0]             s00_awqos;
+    wire                   s00_awvalid;
     wire                   s00_awready;
-    assign lsu_axi_awready             = s00_awready;
 
-    wire [DATA_WIDTH-1:0]  s00_wdata   = lsu_upper_w ? lsu_axi_wdata[63:32] : lsu_axi_wdata[31:0];
-    wire [DATA_WIDTH/8-1:0]s00_wstrb   = lsu_upper_w ? lsu_axi_wstrb[7:4]  : lsu_axi_wstrb[3:0];
-    wire                   s00_wlast   = lsu_axi_wlast;
-    wire                   s00_wvalid  = lsu_axi_wvalid;
+    wire [DATA_WIDTH-1:0]  s00_wdata;
+    wire [DATA_WIDTH/8-1:0]s00_wstrb;
+    wire                   s00_wlast;
+    wire                   s00_wvalid;
     wire                   s00_wready;
-    assign lsu_axi_wready              = s00_wready;
 
     wire [ID_WIDTH-1:0]    s00_bid;
     wire [1:0]             s00_bresp;
     wire                   s00_bvalid;
-    wire                   s00_bready  = lsu_axi_bready;
-    assign lsu_axi_bid                 = s00_bid[VEER_ID-1:0];
-    assign lsu_axi_bvalid              = s00_bvalid;
-    assign lsu_axi_bresp               = s00_bresp;
+    wire                   s00_bready;
 
-    wire [ID_WIDTH-1:0]    s00_arid    = {{(ID_WIDTH-VEER_ID){1'b0}}, lsu_axi_arid};
-    wire [ADDR_WIDTH-1:0]  s00_araddr  = lsu_axi_araddr;
-    wire [7:0]             s00_arlen   = lsu_axi_arlen;
-    wire [2:0]             s00_arsize  = lsu_axi_arsize;
-    wire [1:0]             s00_arburst = lsu_axi_arburst;
-    wire                   s00_arlock  = lsu_axi_arlock;
-    wire [3:0]             s00_arcache = lsu_axi_arcache;
-    wire [2:0]             s00_arprot  = lsu_axi_arprot;
-    wire [3:0]             s00_arqos   = lsu_axi_arqos;
-    wire                   s00_arvalid = lsu_axi_arvalid;
+    wire [ID_WIDTH-1:0]    s00_arid;
+    wire [ADDR_WIDTH-1:0]  s00_araddr;
+    wire [7:0]             s00_arlen;
+    wire [2:0]             s00_arsize;
+    wire [1:0]             s00_arburst;
+    wire                   s00_arlock;
+    wire [3:0]             s00_arcache;
+    wire [2:0]             s00_arprot;
+    wire [3:0]             s00_arqos;
+    wire                   s00_arvalid;
     wire                   s00_arready;
-    assign lsu_axi_arready             = s00_arready;
 
     wire [ID_WIDTH-1:0]    s00_rid;
     wire [DATA_WIDTH-1:0]  s00_rdata;
     wire [1:0]             s00_rresp;
     wire                   s00_rlast;
     wire                   s00_rvalid;
-    wire                   s00_rready  = lsu_axi_rready;
-    assign lsu_axi_rid                 = s00_rid[VEER_ID-1:0];
-    // Return read data mirrored on both 32-bit halves.
-    // VeeR forces araddr[2:0]=0 (8-byte aligned) and internally uses obuf_addr[2]
-    // to select either rdata[31:0] or rdata[63:32].  Since the 32-bit peripheral
-    // always returns data in s00_rdata (lower half), we mirror it to [63:32] so
-    // VeeR gets the correct value whichever lane it samples.
-    assign lsu_axi_rdata               = {s00_rdata, s00_rdata};
-    assign lsu_axi_rresp               = s00_rresp;
-    assign lsu_axi_rlast               = s00_rlast;
-    assign lsu_axi_rvalid              = s00_rvalid;
+    wire                   s00_rready;
+
+    axi_64to32_adapter #(
+        .M_ID_WIDTH (VEER_ID),
+        .S_ID_WIDTH (ID_WIDTH)
+    ) u_lsu_adapter (
+        .clk             (clk),
+        .rst_l           (rst_l),
+
+        .m_axi_awvalid   (lsu_axi_awvalid),
+        .m_axi_awready   (lsu_axi_awready),
+        .m_axi_awid      (lsu_axi_awid),
+        .m_axi_awaddr    (lsu_axi_awaddr),
+        .m_axi_awlen     (lsu_axi_awlen),
+        .m_axi_awsize    (lsu_axi_awsize),
+        .m_axi_awburst   (lsu_axi_awburst),
+        .m_axi_awlock    (lsu_axi_awlock),
+        .m_axi_awcache   (lsu_axi_awcache),
+        .m_axi_awprot    (lsu_axi_awprot),
+        .m_axi_awqos     (lsu_axi_awqos),
+        .m_axi_awregion  (lsu_axi_awregion),
+        .m_axi_wvalid    (lsu_axi_wvalid),
+        .m_axi_wready    (lsu_axi_wready),
+        .m_axi_wdata     (lsu_axi_wdata),
+        .m_axi_wstrb     (lsu_axi_wstrb),
+        .m_axi_wlast     (lsu_axi_wlast),
+        .m_axi_bvalid    (lsu_axi_bvalid),
+        .m_axi_bready    (lsu_axi_bready),
+        .m_axi_bresp     (lsu_axi_bresp),
+        .m_axi_bid       (lsu_axi_bid),
+        .m_axi_arvalid   (lsu_axi_arvalid),
+        .m_axi_arready   (lsu_axi_arready),
+        .m_axi_arid      (lsu_axi_arid),
+        .m_axi_araddr    (lsu_axi_araddr),
+        .m_axi_arregion  (lsu_axi_arregion),
+        .m_axi_arlen     (lsu_axi_arlen),
+        .m_axi_arsize    (lsu_axi_arsize),
+        .m_axi_arburst   (lsu_axi_arburst),
+        .m_axi_arlock    (lsu_axi_arlock),
+        .m_axi_arcache   (lsu_axi_arcache),
+        .m_axi_arprot    (lsu_axi_arprot),
+        .m_axi_arqos     (lsu_axi_arqos),
+        .m_axi_rvalid    (lsu_axi_rvalid),
+        .m_axi_rready    (lsu_axi_rready),
+        .m_axi_rid       (lsu_axi_rid),
+        .m_axi_rdata     (lsu_axi_rdata),
+        .m_axi_rresp     (lsu_axi_rresp),
+        .m_axi_rlast     (lsu_axi_rlast),
+
+        .s_axi_awid      (s00_awid),
+        .s_axi_awaddr    (s00_awaddr),
+        .s_axi_awlen     (s00_awlen),
+        .s_axi_awsize    (s00_awsize),
+        .s_axi_awburst   (s00_awburst),
+        .s_axi_awlock    (s00_awlock),
+        .s_axi_awcache   (s00_awcache),
+        .s_axi_awprot    (s00_awprot),
+        .s_axi_awqos     (s00_awqos),
+        .s_axi_awregion  (),
+        .s_axi_awvalid   (s00_awvalid),
+        .s_axi_awready   (s00_awready),
+        .s_axi_wdata     (s00_wdata),
+        .s_axi_wstrb     (s00_wstrb),
+        .s_axi_wlast     (s00_wlast),
+        .s_axi_wvalid    (s00_wvalid),
+        .s_axi_wready    (s00_wready),
+        .s_axi_bid       (s00_bid),
+        .s_axi_bresp     (s00_bresp),
+        .s_axi_bvalid    (s00_bvalid),
+        .s_axi_bready    (s00_bready),
+        .s_axi_arid      (s00_arid),
+        .s_axi_araddr    (s00_araddr),
+        .s_axi_arlen     (s00_arlen),
+        .s_axi_arsize    (s00_arsize),
+        .s_axi_arburst   (s00_arburst),
+        .s_axi_arlock    (s00_arlock),
+        .s_axi_arcache   (s00_arcache),
+        .s_axi_arprot    (s00_arprot),
+        .s_axi_arqos     (s00_arqos),
+        .s_axi_arregion  (),
+        .s_axi_arvalid   (s00_arvalid),
+        .s_axi_arready   (s00_arready),
+        .s_axi_rid       (s00_rid),
+        .s_axi_rdata     (s00_rdata),
+        .s_axi_rresp     (s00_rresp),
+        .s_axi_rlast     (s00_rlast),
+        .s_axi_rvalid    (s00_rvalid),
+        .s_axi_rready    (s00_rready)
+    );
 
     // =========================================================================
     // 3.  IFU AXI stub
@@ -694,6 +759,16 @@ module soc_top_with_veer #(
         .dccm_ecc_single_error (),
         .dccm_ecc_double_error (),
         .dccm_write_readback_error (),
+
+        // DMI Uncore (tied off)
+        .dmi_core_enable   (1'b0),
+        .dmi_uncore_enable (1'b0),
+        .dmi_uncore_en     (),
+        .dmi_uncore_wr_en  (),
+        .dmi_uncore_addr   (),
+        .dmi_uncore_wdata  (),
+        .dmi_uncore_rdata  (32'h0),
+        .dmi_active        (),
 
         // Export interfaces
         .el2_icache_export (icache_stub_if),

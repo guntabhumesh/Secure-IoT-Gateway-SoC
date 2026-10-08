@@ -19,7 +19,8 @@
 
 static void uart_init(void)
 {
-        UART_LCR = 0x83;
+    UART_LCR = 0x83;
+    UART_BAUD = BAUD_DIV;
     UART_LCR = 0x03;
 
     /* Enable RX interrupt */

@@ -163,3 +163,62 @@ Thumbs.db
 *.swo
 *.tmp
 *.bak
+# ==========================================
+# Vivado generated/project files
+# ==========================================
+
+.vivado/
+.vivado/
+*.xpr
+*.xpr.user
+*.xsa
+*.ltx
+*.bit
+*.bin
+*.mcs
+*.mmi
+*.dcp
+*.edf
+*.pb
+*.jou
+*.str
+
+# Vivado generated directories
+.Xil/
+.cache/
+.hw/
+.ip_user_files/
+.gen/
+.sim/
+.runs/
+# ==========================================
+# Project-local generated simulation/build files
+# ==========================================
+
+proj_dir/run/vivado_proj/
+proj_dir/run/xsim.dir/
+
+# Vivado generated project artifacts
+proj_dir/run/*.xpr
+proj_dir/run/*.xsa
+proj_dir/run/*.bit
+proj_dir/run/*.bin
+proj_dir/run/*.ltx
+
+# VCS generated directories
+proj_dir/run/*.daidir/
+proj_dir/run/simv*
+proj_dir/run/csrc/
+
+# Temporary generated files
+*.wdb
+*.pb
+*.dcp
+*.edf
+
+# Timer IP - temporarily not part of parent repository
+proj_dir/rtl/IP_timer/
+
+# Vivado generated project/run directories
+proj_dir/run/vivado_proj/
+proj_dir/run/xsim.dir/
