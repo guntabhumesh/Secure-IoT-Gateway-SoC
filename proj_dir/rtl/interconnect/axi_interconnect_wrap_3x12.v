@@ -745,11 +745,56 @@ module axi_interconnect_wrap_3x12 #
     input  wire                     m10_axi_rlast,
     input  wire [RUSER_WIDTH-1:0]   m10_axi_ruser,
     input  wire                     m10_axi_rvalid,
-    output wire                     m10_axi_rready
+    output wire                     m10_axi_rready,
+
+    output wire [ID_WIDTH-1:0]      m11_axi_awid,
+    output wire [ADDR_WIDTH-1:0]    m11_axi_awaddr,
+    output wire [7:0]               m11_axi_awlen,
+    output wire [2:0]               m11_axi_awsize,
+    output wire [1:0]               m11_axi_awburst,
+    output wire                     m11_axi_awlock,
+    output wire [3:0]               m11_axi_awcache,
+    output wire [2:0]               m11_axi_awprot,
+    output wire [3:0]               m11_axi_awqos,
+    output wire [3:0]               m11_axi_awregion,
+    output wire [AWUSER_WIDTH-1:0]  m11_axi_awuser,
+    output wire                     m11_axi_awvalid,
+    input  wire                     m11_axi_awready,
+    output wire [DATA_WIDTH-1:0]    m11_axi_wdata,
+    output wire [STRB_WIDTH-1:0]    m11_axi_wstrb,
+    output wire                     m11_axi_wlast,
+    output wire [WUSER_WIDTH-1:0]   m11_axi_wuser,
+    output wire                     m11_axi_wvalid,
+    input  wire                     m11_axi_wready,
+    input  wire [ID_WIDTH-1:0]      m11_axi_bid,
+    input  wire [1:0]               m11_axi_bresp,
+    input  wire [BUSER_WIDTH-1:0]   m11_axi_buser,
+    input  wire                     m11_axi_bvalid,
+    output wire                     m11_axi_bready,
+    output wire [ID_WIDTH-1:0]      m11_axi_arid,
+    output wire [ADDR_WIDTH-1:0]    m11_axi_araddr,
+    output wire [7:0]               m11_axi_arlen,
+    output wire [2:0]               m11_axi_arsize,
+    output wire [1:0]               m11_axi_arburst,
+    output wire                     m11_axi_arlock,
+    output wire [3:0]               m11_axi_arcache,
+    output wire [2:0]               m11_axi_arprot,
+    output wire [3:0]               m11_axi_arqos,
+    output wire [3:0]               m11_axi_arregion,
+    output wire [ARUSER_WIDTH-1:0]  m11_axi_aruser,
+    output wire                     m11_axi_arvalid,
+    input  wire                     m11_axi_arready,
+    input  wire [ID_WIDTH-1:0]      m11_axi_rid,
+    input  wire [DATA_WIDTH-1:0]    m11_axi_rdata,
+    input  wire [1:0]               m11_axi_rresp,
+    input  wire                     m11_axi_rlast,
+    input  wire [RUSER_WIDTH-1:0]   m11_axi_ruser,
+    input  wire                     m11_axi_rvalid,
+    output wire                     m11_axi_rready
 );
 
-localparam S_COUNT = 2;
-localparam M_COUNT = 11;
+localparam S_COUNT = 3;
+localparam M_COUNT = 12;
 
 // parameter sizing helpers
 function [ADDR_WIDTH*M_REGIONS-1:0] w_a_r(input [ADDR_WIDTH*M_REGIONS-1:0] val);
@@ -791,7 +836,7 @@ axi_interconnect #(
     .M_ADDR_WIDTH({ w_32_r(M11_ADDR_WIDTH), w_32_r(M10_ADDR_WIDTH), w_32_r(M09_ADDR_WIDTH), w_32_r(M08_ADDR_WIDTH), w_32_r(M07_ADDR_WIDTH), w_32_r(M06_ADDR_WIDTH), w_32_r(M05_ADDR_WIDTH), w_32_r(M04_ADDR_WIDTH), w_32_r(M03_ADDR_WIDTH), w_32_r(M02_ADDR_WIDTH), w_32_r(M01_ADDR_WIDTH), w_32_r(M00_ADDR_WIDTH) }),
     .M_CONNECT_READ({ w_s(M11_CONNECT_READ), w_s(M10_CONNECT_READ), w_s(M09_CONNECT_READ), w_s(M08_CONNECT_READ), w_s(M07_CONNECT_READ), w_s(M06_CONNECT_READ), w_s(M05_CONNECT_READ), w_s(M04_CONNECT_READ), w_s(M03_CONNECT_READ), w_s(M02_CONNECT_READ), w_s(M01_CONNECT_READ), w_s(M00_CONNECT_READ) }),
     .M_CONNECT_WRITE({ w_s(M11_CONNECT_WRITE), w_s(M10_CONNECT_WRITE), w_s(M09_CONNECT_WRITE), w_s(M08_CONNECT_WRITE), w_s(M07_CONNECT_WRITE), w_s(M06_CONNECT_WRITE), w_s(M05_CONNECT_WRITE), w_s(M04_CONNECT_WRITE), w_s(M03_CONNECT_WRITE), w_s(M02_CONNECT_WRITE), w_s(M01_CONNECT_WRITE), w_s(M00_CONNECT_WRITE) }),
-    .M_SECURE({ w_1(M10_SECURE), w_1(M09_SECURE), w_1(M08_SECURE), w_1(M07_SECURE), w_1(M06_SECURE), w_1(M05_SECURE), w_1(M04_SECURE), w_1(M03_SECURE), w_1(M02_SECURE), w_1(M01_SECURE), w_1(M00_SECURE) })
+    .M_SECURE({ w_1(M11_SECURE), w_1(M10_SECURE), w_1(M09_SECURE), w_1(M08_SECURE), w_1(M07_SECURE), w_1(M06_SECURE), w_1(M05_SECURE), w_1(M04_SECURE), w_1(M03_SECURE), w_1(M02_SECURE), w_1(M01_SECURE), w_1(M00_SECURE) })
 )
 axi_interconnect_inst (
     .clk(clk),
@@ -847,7 +892,7 @@ axi_interconnect_inst (
     .m_axi_awcache({ m11_axi_awcache, m10_axi_awcache, m09_axi_awcache, m08_axi_awcache, m07_axi_awcache, m06_axi_awcache, m05_axi_awcache, m04_axi_awcache, m03_axi_awcache, m02_axi_awcache, m01_axi_awcache, m00_axi_awcache }),
     .m_axi_awprot({ m11_axi_awprot, m10_axi_awprot, m09_axi_awprot, m08_axi_awprot, m07_axi_awprot, m06_axi_awprot, m05_axi_awprot, m04_axi_awprot, m03_axi_awprot, m02_axi_awprot, m01_axi_awprot, m00_axi_awprot }),
     .m_axi_awqos({ m11_axi_awqos, m10_axi_awqos, m09_axi_awqos, m08_axi_awqos, m07_axi_awqos, m06_axi_awqos, m05_axi_awqos, m04_axi_awqos, m03_axi_awqos, m02_axi_awqos, m01_axi_awqos, m00_axi_awqos }),
-    .m_axi_awregion({ m10_axi_awregion, m09_axi_awregion, m08_axi_awregion, m07_axi_awregion, m06_axi_awregion, m05_axi_awregion, m04_axi_awregion, m03_axi_awregion, m02_axi_awregion, m01_axi_awregion, m00_axi_awregion }),
+    .m_axi_awregion({ m11_axi_awregion, m10_axi_awregion, m09_axi_awregion, m08_axi_awregion, m07_axi_awregion, m06_axi_awregion, m05_axi_awregion, m04_axi_awregion, m03_axi_awregion, m02_axi_awregion, m01_axi_awregion, m00_axi_awregion }),
     .m_axi_awuser({ m11_axi_awuser, m10_axi_awuser, m09_axi_awuser, m08_axi_awuser, m07_axi_awuser, m06_axi_awuser, m05_axi_awuser, m04_axi_awuser, m03_axi_awuser, m02_axi_awuser, m01_axi_awuser, m00_axi_awuser }),
     .m_axi_awvalid({ m11_axi_awvalid, m10_axi_awvalid, m09_axi_awvalid, m08_axi_awvalid, m07_axi_awvalid, m06_axi_awvalid, m05_axi_awvalid, m04_axi_awvalid, m03_axi_awvalid, m02_axi_awvalid, m01_axi_awvalid, m00_axi_awvalid }),
     .m_axi_awready({ m11_axi_awready, m10_axi_awready, m09_axi_awready, m08_axi_awready, m07_axi_awready, m06_axi_awready, m05_axi_awready, m04_axi_awready, m03_axi_awready, m02_axi_awready, m01_axi_awready, m00_axi_awready }),
@@ -871,7 +916,7 @@ axi_interconnect_inst (
     .m_axi_arcache({ m11_axi_arcache, m10_axi_arcache, m09_axi_arcache, m08_axi_arcache, m07_axi_arcache, m06_axi_arcache, m05_axi_arcache, m04_axi_arcache, m03_axi_arcache, m02_axi_arcache, m01_axi_arcache, m00_axi_arcache }),
     .m_axi_arprot({ m11_axi_arprot, m10_axi_arprot, m09_axi_arprot, m08_axi_arprot, m07_axi_arprot, m06_axi_arprot, m05_axi_arprot, m04_axi_arprot, m03_axi_arprot, m02_axi_arprot, m01_axi_arprot, m00_axi_arprot }),
     .m_axi_arqos({ m11_axi_arqos, m10_axi_arqos, m09_axi_arqos, m08_axi_arqos, m07_axi_arqos, m06_axi_arqos, m05_axi_arqos, m04_axi_arqos, m03_axi_arqos, m02_axi_arqos, m01_axi_arqos, m00_axi_arqos }),
-    .m_axi_arregion({ m10_axi_arregion, m09_axi_arregion, m08_axi_arregion, m07_axi_arregion, m06_axi_arregion, m05_axi_arregion, m04_axi_arregion, m03_axi_arregion, m02_axi_arregion, m01_axi_arregion, m00_axi_arregion }),
+    .m_axi_arregion({ m11_axi_arregion, m10_axi_arregion, m09_axi_arregion, m08_axi_arregion, m07_axi_arregion, m06_axi_arregion, m05_axi_arregion, m04_axi_arregion, m03_axi_arregion, m02_axi_arregion, m01_axi_arregion, m00_axi_arregion }),
     .m_axi_aruser({ m11_axi_aruser, m10_axi_aruser, m09_axi_aruser, m08_axi_aruser, m07_axi_aruser, m06_axi_aruser, m05_axi_aruser, m04_axi_aruser, m03_axi_aruser, m02_axi_aruser, m01_axi_aruser, m00_axi_aruser }),
     .m_axi_arvalid({ m11_axi_arvalid, m10_axi_arvalid, m09_axi_arvalid, m08_axi_arvalid, m07_axi_arvalid, m06_axi_arvalid, m05_axi_arvalid, m04_axi_arvalid, m03_axi_arvalid, m02_axi_arvalid, m01_axi_arvalid, m00_axi_arvalid }),
     .m_axi_arready({ m11_axi_arready, m10_axi_arready, m09_axi_arready, m08_axi_arready, m07_axi_arready, m06_axi_arready, m05_axi_arready, m04_axi_arready, m03_axi_arready, m02_axi_arready, m01_axi_arready, m00_axi_arready }),
