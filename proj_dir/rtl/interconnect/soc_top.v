@@ -509,7 +509,24 @@ module soc_top #(
         .m10_axi_arvalid(m10_arvalid),.m10_axi_arready(m10_arready),
         .m10_axi_rid(m10_rid),.m10_axi_rdata(m10_rdata),.m10_axi_rresp(m10_rresp),
         .m10_axi_rlast(m10_rlast),.m10_axi_ruser(m10_ruser),
-        .m10_axi_rvalid(m10_rvalid),.m10_axi_rready(m10_rready)
+        .m10_axi_rvalid(m10_rvalid),.m10_axi_rready(m10_rready),
+        .m11_axi_awid(m11_awid),.m11_axi_awaddr(m11_awaddr),.m11_axi_awlen(m11_awlen),
+        .m11_axi_awsize(m11_awsize),.m11_axi_awburst(m11_awburst),.m11_axi_awlock(m11_awlock),
+        .m11_axi_awcache(m11_awcache),.m11_axi_awprot(m11_awprot),.m11_axi_awqos(m11_awqos),
+        .m11_axi_awregion(m11_awregion),.m11_axi_awuser(m11_awuser),
+        .m11_axi_awvalid(m11_awvalid),.m11_axi_awready(m11_awready),
+        .m11_axi_wdata(m11_wdata),.m11_axi_wstrb(m11_wstrb),.m11_axi_wlast(m11_wlast),
+        .m11_axi_wuser(m11_wuser),.m11_axi_wvalid(m11_wvalid),.m11_axi_wready(m11_wready),
+        .m11_axi_bid(m11_bid),.m11_axi_bresp(m11_bresp),.m11_axi_buser(m11_buser),
+        .m11_axi_bvalid(m11_bvalid),.m11_axi_bready(m11_bready),
+        .m11_axi_arid(m11_arid),.m11_axi_araddr(m11_araddr),.m11_axi_arlen(m11_arlen),
+        .m11_axi_arsize(m11_arsize),.m11_axi_arburst(m11_arburst),.m11_axi_arlock(m11_arlock),
+        .m11_axi_arcache(m11_arcache),.m11_axi_arprot(m11_arprot),.m11_axi_arqos(m11_arqos),
+        .m11_axi_arregion(m11_arregion),.m11_axi_aruser(m11_aruser),
+        .m11_axi_arvalid(m11_arvalid),.m11_axi_arready(m11_arready),
+        .m11_axi_rid(m11_rid),.m11_axi_rdata(m11_rdata),.m11_axi_rresp(m11_rresp),
+        .m11_axi_rlast(m11_rlast),.m11_axi_ruser(m11_ruser),
+        .m11_axi_rvalid(m11_rvalid),.m11_axi_rready(m11_rready)
     );
 
     // ══════════════════════════════════════════════════════════════════
@@ -681,14 +698,14 @@ module soc_top #(
     ) u_dma_wrapper_v (
         .clk(clk),
         .rst(~rst_n),
-        .csr_awid(m11_axi_awid), .csr_awaddr(m11_axi_awaddr), .csr_awprot(m11_axi_awprot),
-        .csr_awvalid(m11_axi_awvalid), .csr_awready(m11_axi_awready), .csr_wdata(m11_axi_wdata),
-        .csr_wstrb(m11_axi_wstrb), .csr_wvalid(m11_axi_wvalid), .csr_wready(m11_axi_wready),
-        .csr_bid(m11_axi_bid), .csr_bresp(m11_axi_bresp), .csr_bvalid(m11_axi_bvalid),
-        .csr_bready(m11_axi_bready), .csr_arid(m11_axi_arid), .csr_araddr(m11_axi_araddr),
-        .csr_arprot(m11_axi_arprot), .csr_arvalid(m11_axi_arvalid), .csr_arready(m11_axi_arready),
-        .csr_rid(m11_axi_rid), .csr_rdata(m11_axi_rdata), .csr_rresp(m11_axi_rresp),
-        .csr_rvalid(m11_axi_rvalid), .csr_rready(m11_axi_rready),
+        .csr_awid(m11_awid), .csr_awaddr(m11_awaddr), .csr_awprot(m11_awprot),
+        .csr_awvalid(m11_awvalid), .csr_awready(m11_awready), .csr_wdata(m11_wdata),
+        .csr_wstrb(m11_wstrb), .csr_wvalid(m11_wvalid), .csr_wready(m11_wready),
+        .csr_bid(m11_bid), .csr_bresp(m11_bresp), .csr_bvalid(m11_bvalid),
+        .csr_bready(m11_bready), .csr_arid(m11_arid), .csr_araddr(m11_araddr),
+        .csr_arprot(m11_arprot), .csr_arvalid(m11_arvalid), .csr_arready(m11_arready),
+        .csr_rid(m11_rid), .csr_rdata(m11_rdata), .csr_rresp(m11_rresp),
+        .csr_rvalid(m11_rvalid), .csr_rready(m11_rready),
         
         .m_awid(s02_axi_awid), .m_awaddr(s02_axi_awaddr), .m_awlen(s02_axi_awlen),
         .m_awsize(s02_axi_awsize), .m_awburst(s02_axi_awburst), .m_awlock(s02_axi_awlock),
