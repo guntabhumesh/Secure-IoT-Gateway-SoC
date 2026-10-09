@@ -1,0 +1,57 @@
+[options]
+mode prove
+depth 20
+
+[engines]
+smtbmc z3
+
+[script]
+read -formal gpio_props.sv
+read -formal gpio_regs.sv
+read -formal gpio_wrapper.sv
+read -formal gpio_bit.sv
+read -formal axi4lite_slave_adapter.sv
+read -formal gpio_axi.sv
+read -formal gpio_binds.sv
+prep -top gpio_axi
+
+[files]
+../../../../common/lib/rtl/axi4lite_slave_adapter.sv
+../../rtl/verilog/gpio_regs.sv
+../../rtl/verilog/gpio_wrapper.sv
+../../rtl/verilog/gpio_bit.sv
+../../rtl/verilog/gpio_axi.sv
+gpio_props.sv
+
+[file gpio_binds.sv]
+module gpio_binds;
+    bind gpio_regs gpio_regs_props #(
+        .NUM_BITS(32)
+    ) props (
+        .clk(clk),
+        .reset_n(reset_n),
+        .addr(addr),
+        .wdata(wdata),
+        .rdata(rdata),
+        .we(we),
+        .re(re),
+        .ack(ack),
+        .reg_data_o(reg_data_o),
+        .reg_dir(reg_dir)
+    );
+    
+    bind gpio_axi axi_props props_if (
+        .s_axi_aclk(s_axi_aclk),
+        .s_axi_aresetn(s_axi_aresetn),
+        .s_axi_awvalid(s_axi_awvalid),
+        .s_axi_awready(s_axi_awready),
+        .s_axi_wvalid(s_axi_wvalid),
+        .s_axi_wready(s_axi_wready),
+        .s_axi_bvalid(s_axi_bvalid),
+        .s_axi_bready(s_axi_bready),
+        .s_axi_arvalid(s_axi_arvalid),
+        .s_axi_arready(s_axi_arready),
+        .s_axi_rvalid(s_axi_rvalid),
+        .s_axi_rready(s_axi_rready)
+    );
+endmodule

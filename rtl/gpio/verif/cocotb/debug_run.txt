@@ -1,0 +1,129 @@
+rm -f results.xml
+"make" -f Makefile results.xml
+make[1]: Entering directory '/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb'
+\
+/opt/oss-cad-suite/bin/ghdl -i --std=08  --workdir=sim_build_vhdl_WB_32 --work=work /home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../rtl/vhdl/gpio_regs.vhd /home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../rtl/vhdl/gpio_bit.vhd /home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../rtl/vhdl/gpio_wrapper.vhd /home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../../../common/lib/rtl/wb_slave_adapter.vhd /home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../rtl/vhdl/gpio_wb.vhd && \
+/opt/oss-cad-suite/bin/ghdl -m --std=08  --workdir=sim_build_vhdl_WB_32 -Psim_build_vhdl_WB_32 --work=work gpio_wb 
+analyze /home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../../../common/lib/rtl/wb_slave_adapter.vhd
+analyze /home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../rtl/vhdl/gpio_regs.vhd
+analyze /home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../rtl/vhdl/gpio_bit.vhd
+analyze /home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../rtl/vhdl/gpio_wrapper.vhd
+analyze /home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../rtl/vhdl/gpio_wb.vhd
+elaborate gpio_wb
+/home/ptracton/src/Gemini_IP/virtualenv/GEMINI_IP_PYTHON/lib/python3.12/site-packages/cocotb_tools/makefiles/simulators/Makefile.ghdl:78: Using MODULE is deprecated, please use COCOTB_TEST_MODULES instead.
+/home/ptracton/src/Gemini_IP/virtualenv/GEMINI_IP_PYTHON/lib/python3.12/site-packages/cocotb_tools/makefiles/simulators/Makefile.ghdl:78: Using PLUSARGS is deprecated, please use COCOTB_PLUSARGS instead.
+rm -f results.xml
+COCOTB_TEST_MODULES=test_gpio COCOTB_TESTCASE= COCOTB_TEST_FILTER= COCOTB_TOPLEVEL=gpio_wb TOPLEVEL_LANG=vhdl \
+ /opt/oss-cad-suite/bin/ghdl -r --std=08  --workdir=sim_build_vhdl_WB_32 -Psim_build_vhdl_WB_32 --work=work gpio_wb  --vpi=/home/ptracton/src/Gemini_IP/virtualenv/GEMINI_IP_PYTHON/lib/python3.12/site-packages/cocotb/libs/libcocotbvpi_ghdl.so -gNUM_BITS=32 +BUS_TYPE=WB 
+loading VPI module '/home/ptracton/src/Gemini_IP/virtualenv/GEMINI_IP_PYTHON/lib/python3.12/site-packages/cocotb/libs/libcocotbvpi_ghdl.so'
+     -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:93   in _embed_init_python              Using Python 3.12.4 interpreter at /home/ptracton/src/Gemini_IP/virtualenv/GEMINI_IP_PYTHON/bin/python
+     -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:79   in gpi_print_registered_impl       VPI registered
+VPI module loaded!
+     0.00ns INFO     cocotb                             Running on GHDL version 6.0.0-dev (4.1.0.r1095.ge35c38451.dirty) [Dunoon edition]
+     0.00ns WARNING  gpi                                vpi_iterate returned NULL for type vpiInstance for object NULL
+     0.00ns INFO     cocotb                             Seeding Python random module with 1766525862
+     0.00ns INFO     cocotb                             Initialized cocotb v2.0.1 from /home/ptracton/src/Gemini_IP/virtualenv/GEMINI_IP_PYTHON/lib/python3.12/site-packages/cocotb
+     0.00ns INFO     cocotb.regression                  pytest not found, install it to enable better AssertionError messages
+     0.00ns INFO     cocotb                             Running tests
+     0.00ns INFO     cocotb.regression                  running test_gpio.test_gpio_basic (1/6)
+                                                            Test basic R/W and DIR control
+vpi_get: unknown property
+     0.00ns WARNING  gpi                                Unable to map vpiConst type 0 onto GPI type, guessing this is a logic vector
+   150.00ns WARNING  .. test_gpio_basic.test_gpio_basic DIR mismatch: expected 0xffffffff, got 0x0
+                                                        Traceback (most recent call last):
+                                                          File "/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/test_gpio.py", line 204, in test_gpio_basic
+                                                            assert int(val_dir) == mask, f"DIR mismatch: expected {hex(mask)}, got {hex(int(val_dir))}"
+                                                                   ^^^^^^^^^^^^^^^^^^^^
+                                                        AssertionError: DIR mismatch: expected 0xffffffff, got 0x0
+   150.00ns WARNING  cocotb.regression                  test_gpio.test_gpio_basic failed
+   150.00ns INFO     cocotb.regression                  running test_gpio.test_atomic_ops (2/6)
+                                                            Test Set/Clear/Toggle registers
+   400.00ns INFO     cocotb.regression                  test_gpio.test_atomic_ops passed
+   400.00ns INFO     cocotb.regression                  running test_gpio.test_interrupts (3/6)
+                                                            Test Level and Edge Interrupts using loopback
+   760.00ns WARNING  .. test_interrupts.test_interrupts Level High interrupt failed to trigger via loopback
+                                                        Traceback (most recent call last):
+                                                          File "/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/test_gpio.py", line 257, in test_interrupts
+                                                            assert safe_to_int(dut.intr) == 1, "Level High interrupt failed to trigger via loopback"
+                                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                                        AssertionError: Level High interrupt failed to trigger via loopback
+   760.00ns WARNING  cocotb.regression                  test_gpio.test_interrupts failed
+   760.00ns INFO     cocotb.regression                  running test_gpio.test_debouncing (4/6)
+                                                            Test Input Debouncing using loopback
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../../../common/lib/rtl/wb_slave_adapter.vhd:91:9:@120ns:(report note): WB Adapter WRITE: Addr=00000008 Data=FFFFFFFF
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../../../common/lib/rtl/wb_slave_adapter.vhd:91:9:@270000001fs:(report note): WB Adapter WRITE: Addr=00000004 Data=00000000
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../rtl/vhdl/gpio_regs.vhd:247:9:@290000001fs:(report note): GPIO_REGS WRITE: Addr=00000020 Data=00000005 BE=F
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../../../common/lib/rtl/wb_slave_adapter.vhd:91:9:@290000001fs:(report note): WB Adapter WRITE: Addr=00000020 Data=00000005
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../rtl/vhdl/gpio_regs.vhd:247:9:@330000001fs:(report note): GPIO_REGS WRITE: Addr=00000028 Data=00000003 BE=F
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../../../common/lib/rtl/wb_slave_adapter.vhd:91:9:@330000001fs:(report note): WB Adapter WRITE: Addr=00000028 Data=00000003
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../rtl/vhdl/gpio_regs.vhd:247:9:@370000001fs:(report note): GPIO_REGS WRITE: Addr=00000024 Data=00000004 BE=F
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../../../common/lib/rtl/wb_slave_adapter.vhd:91:9:@370000001fs:(report note): WB Adapter WRITE: Addr=00000024 Data=00000004
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../../../common/lib/rtl/wb_slave_adapter.vhd:91:9:@520000002fs:(report note): WB Adapter WRITE: Addr=00000008 Data=00000001
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../rtl/vhdl/gpio_regs.vhd:247:9:@540000002fs:(report note): GPIO_REGS WRITE: Addr=00000010 Data=00000000 BE=F
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../../../common/lib/rtl/wb_slave_adapter.vhd:91:9:@540000002fs:(report note): WB Adapter WRITE: Addr=00000010 Data=00000000
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../rtl/vhdl/gpio_regs.vhd:247:9:@560000002fs:(report note): GPIO_REGS WRITE: Addr=00000014 Data=00000001 BE=F
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../../../common/lib/rtl/wb_slave_adapter.vhd:91:9:@560000002fs:(report note): WB Adapter WRITE: Addr=00000014 Data=00000001
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../rtl/vhdl/gpio_regs.vhd:247:9:@580000002fs:(report note): GPIO_REGS WRITE: Addr=0000000C Data=00000001 BE=F
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../../../common/lib/rtl/wb_slave_adapter.vhd:91:9:@580000002fs:(report note): WB Adapter WRITE: Addr=0000000C Data=00000001
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../rtl/vhdl/gpio_regs.vhd:247:9:@600000002fs:(report note): GPIO_REGS WRITE: Addr=00000004 Data=00000001 BE=F
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../../../common/lib/rtl/wb_slave_adapter.vhd:91:9:@600000002fs:(report note): WB Adapter WRITE: Addr=00000004 Data=00000001
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../../../common/lib/rtl/wb_slave_adapter.vhd:91:9:@880000003fs:(report note): WB Adapter WRITE: Addr=0000002C Data=0000000A
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../rtl/vhdl/gpio_regs.vhd:247:9:@900000003fs:(report note): GPIO_REGS WRITE: Addr=00000030 Data=00000001 BE=F
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../../../common/lib/rtl/wb_slave_adapter.vhd:91:9:@900000003fs:(report note): WB Adapter WRITE: Addr=00000030 Data=00000001
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../rtl/vhdl/gpio_regs.vhd:247:9:@920000003fs:(report note): GPIO_REGS WRITE: Addr=00000008 Data=00000001 BE=F
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../rtl/vhdl/gpio_regs.vhd:258:13:@920000003fs:(report note): GPIO_REGS WRITE DIR: Data=00000001
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../../../common/lib/rtl/wb_slave_adapter.vhd:91:9:@920000003fs:(report note): W   930.00ns INFO     cocotb.gpio_wb                     Testing Glitch suppression via loopback
+  1200.00ns INFO     cocotb.gpio_wb                     Testing Stable signal propagation via loopback
+  1530.00ns INFO     cocotb.regression                  test_gpio.test_debouncing passed
+  1530.00ns INFO     cocotb.regression                  running test_gpio.test_inversion (5/6)
+                                                            Test Input & Output Inversion using loopback
+  2160.00ns INFO     cocotb.regression                  test_gpio.test_inversion passed
+  2160.00ns INFO     cocotb.regression                  running test_gpio.test_pwm (6/6)
+                                                            Test PWM generation
+B Adapter WRITE: Addr=00000008 Data=00000001
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../rtl/vhdl/gpio_regs.vhd:247:9:@940000003fs:(report note): GPIO_REGS WRITE: Addr=00000004 Data=00000001 BE=F
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../../../common/lib/rtl/wb_slave_adapter.vhd:91:9:@940000003fs:(report note): WB Adapter WRITE: Addr=00000004 Data=00000001
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../rtl/vhdl/gpio_regs.vhd:247:9:@980000003fs:(report note): GPIO_REGS WRITE: Addr=00000004 Data=00000000 BE=F
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../../../common/lib/rtl/wb_slave_adapter.vhd:91:9:@980000003fs:(report note): WB Adapter WRITE: Addr=00000004 Data=00000000
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../rtl/vhdl/gpio_regs.vhd:247:9:@1210000003fs:(report note): GPIO_REGS WRITE: Addr=00000004 Data=00000001 BE=F
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../../../common/lib/rtl/wb_slave_adapter.vhd:91:9:@1210000003fs:(report note): WB Adapter WRITE: Addr=00000004 Data=00000001
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../../../common/lib/rtl/wb_slave_adapter.vhd:91:9:@1650000004fs:(report note): WB Adapter WRITE: Addr=00000008 Data=00000001
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../rtl/vhdl/gpio_regs.vhd:247:9:@1670000004fs:(report note): GPIO_REGS WRITE: Addr=00000004 Data=00000001 BE=F
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../../../common/lib/rtl/wb_slave_adapter.vhd:91:9:@1670000004fs:(report note): WB Adapter WRITE: Addr=00000004 Data=00000001
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../rtl/vhdl/gpio_regs.vhd:247:9:@1690000004fs:(report note): GPIO_REGS WRITE: Addr=00000038 Data=00000001 BE=F
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../../../common/lib/rtl/wb_slave_adapter.vhd:91:9:@1690000004fs:(report note): WB Adapter WRITE: Addr=00000038 Data=00000001
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../../../common/lib/rtl/wb_slave_adapter.vhd:91:9:@1850000004fs:(report note): WB Adapter WRITE: Addr=00000038 Data=00000000
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../rtl/vhdl/gpio_regs.vhd:247:9:@1870000004fs:(report note): GPIO_REGS WRITE: Addr=00000004 Data=00000001 BE=F
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../../../common/lib/rtl/wb_slave_adapter.vhd:91:9:@1870000004fs:(report note): WB Adapter WRITE: Addr=00000004 Data=00000001
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../rtl/vhdl/gpio_regs.vhd:247:9:@1890000004fs:(report note): GPIO_REGS WRITE: Addr=00000034 Data=00000001 BE=F
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../../../common/lib/rtl/wb_slave_adapter.vhd:91:9:@1890000004fs:(report note): WB Adapter WRITE: Addr=00000034 Data=00000001
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../../../common/lib/rtl/wb_slave_adapter.vhd:91:9:@2280000005fs:(report note): WB Adapter WRITE: Addr=00000050 Data=000A0000
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../rtl/vhdl/gpio_regs.vhd:247:9:@2300000005fs:(report note): GPIO_REGS WRITE: Addr=00000054 Data=00000005 BE=F
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../../../common/lib/rtl/wb_slave_adapter.vhd:91:9:@2300000005fs:(report note): WB Adapter WRITE: Addr=00000054 Data=00000005
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../rtl/vhdl/gpio_regs.vhd:247:9:@2320000005fs:(report note): GPIO_REGS WRITE: Addr=0000004C Data=00000001 BE=F
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../../../common/lib/rtl/wb_slave_adapter.vhd:91:9:@2320000005fs:(report note): WB Adapter WRITE: Addr=0000004C Data=00000001
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../rtl/vhdl/gpio_regs.vhd:247:9:@2340000005fs:(report note): GPIO_REGS WRITE: Addr=00000008 Data=00000001 BE=F
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb  3540.00ns WARNING  cocotb.Test test_pwm.test_pwm      PWM signal not toggling
+                                                        Traceback (most recent call last):
+                                                          File "/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/test_gpio.py", line 356, in test_pwm
+                                                            assert transitions > 5, "PWM signal not toggling"
+                                                                   ^^^^^^^^^^^^^^^
+                                                        AssertionError: PWM signal not toggling
+  3540.00ns WARNING  cocotb.regression                  test_gpio.test_pwm failed
+  3540.00ns INFO     cocotb.regression                  **************************************************************************************
+                                                        ** TEST                          STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        **************************************************************************************
+                                                        ** test_gpio.test_gpio_basic      FAIL         150.00           0.00      94523.08  **
+                                                        ** test_gpio.test_atomic_ops      PASS         250.00           0.00     232088.53  **
+                                                        ** test_gpio.test_interrupts      FAIL         360.00           0.00     301688.20  **
+                                                        ** test_gpio.test_debouncing      PASS         770.00           0.00     454811.16  **
+                                                        ** test_gpio.test_inversion       PASS         630.00           0.00     469678.55  **
+                                                        ** test_gpio.test_pwm             FAIL        1380.00           0.00     305362.15  **
+                                                        **************************************************************************************
+                                                        ** TESTS=6 PASS=3 FAIL=3 SKIP=0               3540.00           0.02     171784.34  **
+                                                        **************************************************************************************
+/../../rtl/vhdl/gpio_regs.vhd:258:13:@2340000005fs:(report note): GPIO_REGS WRITE DIR: Data=00000001
+/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb/../../../../common/lib/rtl/wb_slave_adapter.vhd:91:9:@2340000005fs:(report note): WB Adapter WRITE: Addr=00000008 Data=00000001
+make[1]: *** [/home/ptracton/src/Gemini_IP/virtualenv/GEMINI_IP_PYTHON/lib/python3.12/site-packages/cocotb_tools/makefiles/simulators/Makefile.ghdl:79: results.xml] Error 3
+make[1]: Leaving directory '/home/ptracton/src/Gemini_IP/IP/interface/GPIO/verif/cocotb'
+make: *** [/home/ptracton/src/Gemini_IP/virtualenv/GEMINI_IP_PYTHON/lib/python3.12/site-packages/cocotb_tools/makefiles/Makefile.inc:17: sim] Error 2

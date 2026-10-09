@@ -1,0 +1,50 @@
+[options]
+mode prove
+depth 20
+
+[engines]
+smtbmc z3
+
+[script]
+read -formal gpio_props.sv
+read -formal gpio_regs.sv
+read -formal gpio_wrapper.sv
+read -formal gpio_bit.sv
+read -formal wb_slave_adapter.sv
+read -formal gpio_wb.sv
+read -formal gpio_binds.sv
+prep -top gpio_wb
+
+[files]
+../../../../common/lib/rtl/wb_slave_adapter.sv
+../../rtl/verilog/gpio_regs.sv
+../../rtl/verilog/gpio_wrapper.sv
+../../rtl/verilog/gpio_bit.sv
+../../rtl/verilog/gpio_wb.sv
+gpio_props.sv
+
+[file gpio_binds.sv]
+module gpio_binds;
+    bind gpio_regs gpio_regs_props #(
+        .NUM_BITS(32)
+    ) props (
+        .clk(clk),
+        .reset_n(reset_n),
+        .addr(addr),
+        .wdata(wdata),
+        .rdata(rdata),
+        .we(we),
+        .re(re),
+        .ack(ack),
+        .reg_data_o(reg_data_o),
+        .reg_dir(reg_dir)
+    );
+    
+    bind gpio_wb wb_props props_if (
+        .wb_clk_i(wb_clk_i),
+        .wb_rst_i(wb_rst_i),
+        .wb_cyc_i(wb_cyc_i),
+        .wb_stb_i(wb_stb_i),
+        .wb_ack_o(wb_ack_o)
+    );
+endmodule
