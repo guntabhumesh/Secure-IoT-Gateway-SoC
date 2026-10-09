@@ -93,7 +93,7 @@ module dma_axi_wrapper_v #(
     // Connect CSR MOSI
     assign dma_csr_mosi.awid    = csr_awid;
     assign dma_csr_mosi.awaddr  = csr_awaddr;
-    assign dma_csr_mosi.awprot  = csr_awprot;
+    assign dma_csr_mosi.awprot  = axi_prot_t'(csr_awprot);
     assign dma_csr_mosi.awvalid = csr_awvalid;
     assign dma_csr_mosi.wdata   = csr_wdata;
     assign dma_csr_mosi.wstrb   = csr_wstrb;
@@ -101,7 +101,7 @@ module dma_axi_wrapper_v #(
     assign dma_csr_mosi.bready  = csr_bready;
     assign dma_csr_mosi.arid    = csr_arid;
     assign dma_csr_mosi.araddr  = csr_araddr;
-    assign dma_csr_mosi.arprot  = csr_arprot;
+    assign dma_csr_mosi.arprot  = axi_prot_t'(csr_arprot);
     assign dma_csr_mosi.arvalid = csr_arvalid;
     assign dma_csr_mosi.rready  = csr_rready;
 
@@ -154,13 +154,13 @@ module dma_axi_wrapper_v #(
     assign dma_m_miso.awready = m_awready;
     assign dma_m_miso.wready  = m_wready;
     assign dma_m_miso.bid     = m_bid;
-    assign dma_m_miso.bresp   = m_bresp;
+    assign dma_m_miso.bresp   = axi_resp_t'(m_bresp);
     assign dma_m_miso.buser   = m_buser;
     assign dma_m_miso.bvalid  = m_bvalid;
     assign dma_m_miso.arready = m_arready;
     assign dma_m_miso.rid     = m_rid;
     assign dma_m_miso.rdata   = m_rdata;
-    assign dma_m_miso.rresp   = m_rresp;
+    assign dma_m_miso.rresp   = axi_resp_t'(m_rresp);
     assign dma_m_miso.ruser   = m_ruser;
     assign dma_m_miso.rlast   = m_rlast;
     assign dma_m_miso.rvalid  = m_rvalid;
