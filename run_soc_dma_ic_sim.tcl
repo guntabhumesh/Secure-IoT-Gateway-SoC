@@ -8,6 +8,8 @@ set inc_dirs [list \
     "[file normalize "./proj_dir/rtl/inc"]" \
     "[file normalize "./proj_dir/rtl/axi_dma/rtl/inc"]" \
     "[file normalize "./proj_dir/rtl/axi_dma/rggen-verilog-rtl"]" \
+    "[file normalize "./proj_dir/rtl/uart_file/src/include"]" \
+    "[file normalize "./proj_dir/rtl/i2c-master"]" \
 ]
 
 # AXI and Utils packages
@@ -55,6 +57,8 @@ add_files ./proj_dir/rtl/aes_core-master/rtl/aes_inv_sbox.v
 
 # soc_top instantiates axi_uart_slave which instantiates uart_top
 add_files [glob -nocomplain "./proj_dir/rtl/uart_file/src/rtl/*.v"]
+add_files "./proj_dir/rtl/uart_file/src/include/axi_uart_defines.vh"
+add_files "./proj_dir/rtl/uart_file/src/include/axi_uart.vh"
 
 # Add the testbench
 add_files -fileset sim_1 ./proj_dir/tb/tb_soc_dma_interconnect.sv
@@ -63,6 +67,8 @@ add_files -fileset sim_1 ./proj_dir/tb/tb_soc_dma_interconnect.sv
 set_property file_type "Verilog Header" [get_files "./proj_dir/rtl/axi_dma/rggen-verilog-rtl/rggen_rtl_macros.vh"]
 set_property file_type "Verilog Header" [get_files "./proj_dir/rtl/axi_dma/rtl/inc/dma_pkg.svh"]
 set_property file_type "Verilog Header" [get_files "./proj_dir/rtl/i2c-master/i2c_master_defines.v"]
+set_property file_type "Verilog Header" [get_files "./proj_dir/rtl/uart_file/src/include/axi_uart_defines.vh"]
+set_property file_type "Verilog Header" [get_files "./proj_dir/rtl/uart_file/src/include/axi_uart.vh"]
 
 # Include directories
 set_property include_dirs $inc_dirs [get_filesets sources_1]
