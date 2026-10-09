@@ -1,0 +1,38 @@
+[options]
+mode prove
+depth 20
+
+[engines]
+smtbmc z3
+
+[script]
+plugin -i ghdl
+ghdl --std=08 wb_slave_adapter.vhd timer_core.vhd timer_regs.vhd timer_wb.vhd -e timer_wb
+read -formal timer_props.sv
+read -formal timer_binds.sv
+read -formal -D BUS_WB timer_wb_vhdl_binds.sv
+prep -top timer_wb
+
+[files]
+../../rtl/vhdl/timer_regs.vhd
+../../rtl/vhdl/timer_core.vhd
+../../rtl/vhdl/timer_wb.vhd
+../../../../common/lib/rtl/wb_slave_adapter.vhd
+timer_props.sv
+timer_binds.sv
+
+[file timer_wb_vhdl_binds.sv]
+module timer_wb_vhdl_binds;
+    bind timer_wb wb_props props_wb (
+        .clk_i(clk_i),
+        .rst_i(rst_i),
+        .adr_i(adr_i),
+        .dat_i(dat_i),
+        .we_i(we_i),
+        .sel_i(sel_i),
+        .stb_i(stb_i),
+        .cyc_i(cyc_i),
+        .dat_o(dat_o),
+        .ack_o(ack_o)
+    );
+endmodule

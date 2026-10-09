@@ -1,0 +1,38 @@
+[options]
+mode prove
+depth 20
+
+[engines]
+smtbmc z3
+
+[script]
+plugin -i ghdl
+ghdl --std=08 apb_slave_adapter.vhd timer_core.vhd timer_regs.vhd timer_apb.vhd -e timer_apb
+read -formal timer_props.sv
+read -formal timer_binds.sv
+read -formal -D BUS_APB timer_apb_vhdl_binds.sv
+prep -top timer_apb
+
+[files]
+../../rtl/vhdl/timer_regs.vhd
+../../rtl/vhdl/timer_core.vhd
+../../rtl/vhdl/timer_apb.vhd
+../../../../common/lib/rtl/apb_slave_adapter.vhd
+timer_props.sv
+timer_binds.sv
+
+[file timer_apb_vhdl_binds.sv]
+module timer_apb_vhdl_binds;
+    bind timer_apb apb_props props_apb (
+        .pclk(pclk),
+        .presetn(presetn),
+        .psel(psel),
+        .penable(penable),
+        .pwrite(pwrite),
+        .paddr(paddr),
+        .pwdata(pwdata),
+        .pready(pready),
+        .prdata(prdata),
+        .pslverr(pslverr)
+    );
+endmodule

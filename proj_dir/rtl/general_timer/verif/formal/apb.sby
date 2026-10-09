@@ -1,0 +1,34 @@
+[options]
+mode prove
+depth 20
+
+[engines]
+smtbmc z3
+
+[script]
+read -formal timer_props.sv
+read -formal timer_regs.sv
+read -formal timer_core.sv
+read -formal apb_slave_adapter.sv
+read -formal timer_apb.sv
+read -formal timer_binds.sv
+prep -top timer_apb
+
+[files]
+../../rtl/verilog/timer_regs.sv
+../../rtl/verilog/timer_core.sv
+../../rtl/verilog/timer_apb.sv
+../../../../common/lib/rtl/apb_slave_adapter.sv
+timer_props.sv
+timer_binds.sv
+
+[file timer_apb_binds.sv]
+module timer_apb_binds;
+    bind timer_apb apb_props props_apb (
+        .pclk(pclk),
+        .presetn(presetn),
+        .psel(psel),
+        .penable(penable),
+        .pready(pready)
+    );
+endmodule

@@ -1,0 +1,40 @@
+[options]
+mode prove
+depth 20
+
+[engines]
+smtbmc z3
+
+[script]
+plugin -i ghdl
+ghdl --std=08 axi4lite_slave_adapter.vhd timer_core.vhd timer_regs.vhd timer_axi.vhd -e timer_axi
+read -formal timer_props.sv
+read -formal timer_binds.sv
+read -formal -D BUS_AXI timer_axi_vhdl_binds.sv
+prep -top timer_axi
+
+[files]
+../../rtl/vhdl/timer_regs.vhd
+../../rtl/vhdl/timer_core.vhd
+../../rtl/vhdl/timer_axi.vhd
+../../../../common/lib/rtl/axi4lite_slave_adapter.vhd
+timer_props.sv
+timer_binds.sv
+
+[file timer_axi_vhdl_binds.sv]
+module timer_axi_vhdl_binds;
+    bind timer_axi axi_props props_axi (
+        .s_axi_aclk(aclk),
+        .s_axi_aresetn(aresetn),
+        .s_axi_awvalid(awvalid),
+        .s_axi_awready(awready),
+        .s_axi_wvalid(wvalid),
+        .s_axi_wready(wready),
+        .s_axi_bvalid(bvalid),
+        .s_axi_bready(bready),
+        .s_axi_arvalid(arvalid),
+        .s_axi_arready(arready),
+        .s_axi_rvalid(rvalid),
+        .s_axi_rready(rready)
+    );
+endmodule

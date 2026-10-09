@@ -137,7 +137,7 @@ The repository centers on [`rtl/interconnect/axi_interconnect_wrap_2x11.v`](http
 - [`rtl/top/soc_top_with_veer.v`](https://github.com/guntabhumesh/Secure-IoT-Gateway-SoC/blob/main/proj_dir/rtl/top/soc_top_with_veer.v) (and its `.sv` counterpart) — VeeR EL2-facing top level
 - I2C path: [`tb/axi_to_wb_bridge.v`](https://github.com/guntabhumesh/Secure-IoT-Gateway-SoC/blob/main/proj_dir/tb/axi_to_wb_bridge.v) → [`rtl/i2c-master/i2c_master_top.v`](https://github.com/guntabhumesh/Secure-IoT-Gateway-SoC/blob/main/proj_dir/rtl/i2c-master/i2c_master_top.v) and its byte/bit controller sub-blocks
 - AES path: [`rtl/aes_core-master/rtl/axi_aes_slave.v`](https://github.com/guntabhumesh/Secure-IoT-Gateway-SoC/blob/main/proj_dir/rtl/aes_core-master/rtl/axi_aes_slave.v) → `aes_cipher_top.v` + `aes_inv_cipher_top.v` (S-box/inverse S-box/key-expand/rcon sub-blocks)
-- UART path: [`rtl/uart file/src/rtl/axi_uart_slave.v`](<https://github.com/guntabhumesh/Secure-IoT-Gateway-SoC/blob/main/proj_dir/rtl/uart%20file/src/rtl/axi_uart_slave.v>) → `axi_uart_top.v` and its controller/FIFO/TX/RX sub-blocks
+- UART path: [`rtl/uart_file/src/rtl/axi_uart_slave.v`](<https://github.com/guntabhumesh/Secure-IoT-Gateway-SoC/blob/main/proj_dir/rtl/uart%20file/src/rtl/axi_uart_slave.v>) → `axi_uart_top.v` and its controller/FIFO/TX/RX sub-blocks
 - `m03`–`m10`: [`tb/dummy_axi_slave.v`](https://github.com/guntabhumesh/Secure-IoT-Gateway-SoC/blob/main/proj_dir/tb/dummy_axi_slave.v), parameterized per-slave-index, instantiated 8×
 
 ### Implemented in the lighter-weight standalone/bridge-level target (unchanged)
@@ -145,7 +145,7 @@ The repository centers on [`rtl/interconnect/axi_interconnect_wrap_2x11.v`](http
 
 ### Known gaps in the integration
 - `proj_dir/rtl/Cores-VeeR-EL2/` is present as an **empty directory** in a plain clone/download of this repo (tracked as a gitlink/submodule entry with no `.gitmodules` committed) — the VeeR EL2 source tree must be populated manually before `soc_top_with_veer` or `tb_soc_veer_top.v` can be compiled (see [§7](#7-simulation-prerequisites-and-exact-flows) and [§11](#11-known-limitations-and-current-integration-status))
-- `proj_dir/rtl/uartfiles` is a symlink to an **absolute path on the original author's machine** (`/home/student/Documents/.../rtl/uart file`), so it will not resolve on a fresh clone — the real UART sources live at `proj_dir/rtl/uart file/` and can be used directly
+- `proj_dir/rtl/uartfiles` is a symlink to an **absolute path on the original author's machine** (`/home/student/Documents/.../rtl/uart_file`), so it will not resolve on a fresh clone — the real UART sources live at `proj_dir/rtl/uart_file/` and can be used directly
 - `proj_dir/run/run.f` references `../tb/tb_axi_interconnect_2x11.v`, and `proj_dir/run/run_aes.f` references `../tb/tb_aes_core.v` — **neither file exists** in the current tree (only the `_aes`-suffixed / SoC-level testbenches are present); these two filelists will not compile as-is
 - `proj_dir/tb/soc_uart_tb.v` is a committed **empty file** (0 bytes)
 - `proj_dir/run/run_spi.f` / `run_spi.sh` reference an SPI master block (`proj_dir/rtl/spi-master-master/...`) that is **not present** in the repository — SPI is planned/referenced but not yet imported
@@ -211,7 +211,7 @@ Secure-IoT-Gateway-SoC/
     │   │   ├── syn/bin/*.dc
     │   │   ├── data/sky130.tcl
     │   │   └── aes_core.core                 # FuseSoC core file
-    │   ├── uart file/                        # AXI-Lite UART IP (real source — see §11 re: uartfiles symlink)
+    │   ├── uart_file/                        # AXI-Lite UART IP (real source — see §11 re: uartfiles symlink)
     │   │   ├── src/include/ (axi_uart.vh, axi_uart_defines.vh)
     │   │   ├── src/rtl/ (axi_uart_top.v, axi_uart_slave.v, axi_internal_fifo.v,
     │   │   │             uart_controller.v, uart_receiver.v, uart_transmitter.v,
@@ -257,8 +257,8 @@ Secure-IoT-Gateway-SoC/
 | [`rtl/i2c-master/i2c_master_top.v`](https://github.com/guntabhumesh/Secure-IoT-Gateway-SoC/blob/main/proj_dir/rtl/i2c-master/i2c_master_top.v) | WISHBONE rev B.2 I2C master core (OpenCores) |
 | [`rtl/aes_core-master/rtl/axi_aes_slave.v`](https://github.com/guntabhumesh/Secure-IoT-Gateway-SoC/blob/main/proj_dir/rtl/aes_core-master/rtl/axi_aes_slave.v) | AXI4 register-mapped AES‑128 slave; auto-chains `aes_inv_cipher_top` after `aes_cipher_top` for round-trip decrypt |
 | [`rtl/aes_core-master/rtl/aes_cipher_top.v`](https://github.com/guntabhumesh/Secure-IoT-Gateway-SoC/blob/main/proj_dir/rtl/aes_core-master/rtl/aes_cipher_top.v) / [`aes_inv_cipher_top.v`](https://github.com/guntabhumesh/Secure-IoT-Gateway-SoC/blob/main/proj_dir/rtl/aes_core-master/rtl/aes_inv_cipher_top.v) | AES‑128 forward/inverse cipher datapaths |
-| [`rtl/uart file/src/rtl/axi_uart_slave.v`](<https://github.com/guntabhumesh/Secure-IoT-Gateway-SoC/blob/main/proj_dir/rtl/uart%20file/src/rtl/axi_uart_slave.v>) | AXI4-full slave wrapper around `axi_uart_top`; buffers the AW beat so it can present AW+W together to the UART core |
-| [`rtl/uart file/src/rtl/axi_uart_top.v`](<https://github.com/guntabhumesh/Secure-IoT-Gateway-SoC/blob/main/proj_dir/rtl/uart%20file/src/rtl/axi_uart_top.v>) | AXI4‑Lite UART core: THR/RBR/IER/BAUD/LCR/LSR register file, TX/RX FIFOs |
+| [`rtl/uart_file/src/rtl/axi_uart_slave.v`](<https://github.com/guntabhumesh/Secure-IoT-Gateway-SoC/blob/main/proj_dir/rtl/uart%20file/src/rtl/axi_uart_slave.v>) | AXI4-full slave wrapper around `axi_uart_top`; buffers the AW beat so it can present AW+W together to the UART core |
+| [`rtl/uart_file/src/rtl/axi_uart_top.v`](<https://github.com/guntabhumesh/Secure-IoT-Gateway-SoC/blob/main/proj_dir/rtl/uart%20file/src/rtl/axi_uart_top.v>) | AXI4‑Lite UART core: THR/RBR/IER/BAUD/LCR/LSR register file, TX/RX FIFOs |
 | [`tb/tb_soc_top.v`](https://github.com/guntabhumesh/Secure-IoT-Gateway-SoC/blob/main/proj_dir/tb/tb_soc_top.v) | Full-SoC integration TB: 12 directed tests across I2C/AES/UART/dummy routing |
 | [`tb/tb_soc_veer_top.v`](https://github.com/guntabhumesh/Secure-IoT-Gateway-SoC/blob/main/proj_dir/tb/tb_soc_veer_top.v) | SoC + VeeR EL2 smoke test: loads an ICCM `.hex` image, watches UART TX for firmware activity |
 | [`tb/tb_axi_interconnect_2x11_aes.v`](https://github.com/guntabhumesh/Secure-IoT-Gateway-SoC/blob/main/proj_dir/tb/tb_axi_interconnect_2x11_aes.v) | Interconnect + I2C (via `axi_to_wb_bridge`) + AES (via `axi_to_aes_bridge`) + dummy-slave routing test |
@@ -334,7 +334,7 @@ vcs -sverilog -full64 -f run_soc.f -o simv_soc \
     2>&1 | tee compile_soc.log && ./simv_soc | tee sim_soc.log
 verdi -f run_soc.f -ssf dump_soc_uart.fsdb &
 ```
-> `run_soc.f` expects UART sources at `../rtl/uartfiles/src/include` — since that symlink is broken on a fresh clone (see §11), point `+incdir` at `../rtl/uart file/src/include` instead, or recreate the `uartfiles` symlink locally.
+> `run_soc.f` expects UART sources at `../rtl/uartfiles/src/include` — since that symlink is broken on a fresh clone (see §11), point `+incdir` at `../rtl/uart_file/src/include` instead, or recreate the `uartfiles` symlink locally.
 
 ### SoC + VeeR EL2 (`run_soc_veer.f` / `run_soc_veer.sh`)
 ```bash
@@ -412,11 +412,11 @@ python proj_dir/scripts/axi_interconnect_wrap.py -p 2 11 -n axi_interconnect_wra
 | **Reference vectors** | NIST FIPS‑197, Appendices B and C.1 |
 | **Status in this repo** | RTL, AXI slave wrapper, bench, FuseSoC core file, sky130 synthesis TCL, and RTL-sim run collateral included; integrated at `m01` in both SoC tops |
 
-### AXI‑Lite UART IP — [`rtl/uart file/`](<https://github.com/guntabhumesh/Secure-IoT-Gateway-SoC/tree/main/proj_dir/rtl/uart%20file>)
+### AXI‑Lite UART IP — [`rtl/uart_file/`](<https://github.com/guntabhumesh/Secure-IoT-Gateway-SoC/tree/main/proj_dir/rtl/uart%20file>)
 | | |
 |---|---|
 | **Upstream source** | [`axi-lite_uart-ipcore`](https://github.com/m4j0rt0m/axi-lite_uart-ipcore) by Abraham J. Ruiz R. (`m4j0rt0m`) |
-| **License** | MIT — [`rtl/uart file/LICENSE`](<https://github.com/guntabhumesh/Secure-IoT-Gateway-SoC/blob/main/proj_dir/rtl/uart%20file/LICENSE>) |
+| **License** | MIT — [`rtl/uart_file/LICENSE`](<https://github.com/guntabhumesh/Secure-IoT-Gateway-SoC/blob/main/proj_dir/rtl/uart%20file/LICENSE>) |
 | **Diagram** | [`doc/uart/axi-uart.png`](https://github.com/guntabhumesh/Secure-IoT-Gateway-SoC/blob/main/proj_dir/doc/uart/axi-uart.png), [`doc/uart/axi-uart.vsdx`](https://github.com/guntabhumesh/Secure-IoT-Gateway-SoC/blob/main/proj_dir/doc/uart/axi-uart.vsdx) |
 | **Status in this repo** | RTL, headers, TB, Makefile-based build, CI workflow configs (lint-verilator, synth-quartus, synth-yosys), and license included; extended here with `axi_uart_slave.v` (AXI4-full wrapper) and integrated at `m02` |
 
@@ -437,7 +437,7 @@ Original/authored for this project: `axi_interconnect.v`, `axi_interconnect_wrap
 
 ## 11) Known limitations and current integration status
 - `proj_dir/rtl/Cores-VeeR-EL2/` ships as an **empty directory** — it is a gitlink/submodule reference with no `.gitmodules` committed, so `soc_top_with_veer.v` and `tb_soc_veer_top.v` cannot be compiled until the VeeR EL2 source tree is populated manually from [chipsalliance/Cores-VeeR-EL2](https://github.com/chipsalliance/Cores-VeeR-EL2)
-- `proj_dir/rtl/uartfiles` is an **absolute symlink** pointing into the original author's local filesystem (`/home/student/Documents/1602-23-735-311/...`) and will not resolve elsewhere; use `proj_dir/rtl/uart file/` directly instead
+- `proj_dir/rtl/uartfiles` is an **absolute symlink** pointing into the original author's local filesystem (`/home/student/Documents/1602-23-735-311/...`) and will not resolve elsewhere; use `proj_dir/rtl/uart_file/` directly instead
 - `run/run.f` and `run/run_aes.f` each reference a testbench file (`tb_axi_interconnect_2x11.v`, `tb_aes_core.v`) that is **not present** in the repository — only the `_aes`-suffixed interconnect TB and the AES bench under `aes_core-master/bench/` exist
 - `proj_dir/tb/soc_uart_tb.v` is a committed **empty placeholder** file
 - `run/run_spi.f` / `run_spi.sh` reference an SPI master block whose RTL/TB has **not yet been added** to `proj_dir/rtl/`
@@ -447,15 +447,15 @@ Original/authored for this project: `axi_interconnect.v`, `axi_interconnect_wrap
 - Generated simulation artifacts (`AN.DB/`, `simv*`, `*.daidir/`, `csrc/`, Verdi session logs) are present in the committed tree under `proj_dir/run/` and various `sim/`/`run/` subfolders
 
 ## 12) Contribution/dev guidance and provenance notes
-- Prefer modifying source under `proj_dir/rtl/interconnect/`, `proj_dir/rtl/top/`, `proj_dir/tb/`, `proj_dir/run/`, and root-level docs, while treating imported third-party IP trees (`i2c-master/`, `aes_core-master/`, `uart file/`, `Cores-VeeR-EL2/`) as vendored unless intentionally updating them
+- Prefer modifying source under `proj_dir/rtl/interconnect/`, `proj_dir/rtl/top/`, `proj_dir/tb/`, `proj_dir/run/`, and root-level docs, while treating imported third-party IP trees (`i2c-master/`, `aes_core-master/`, `uart_file/`, `Cores-VeeR-EL2/`) as vendored unless intentionally updating them
 - License/provenance signals in-tree:
-  - MIT license file in the UART IP subtree ([`rtl/uart file/LICENSE`](<https://github.com/guntabhumesh/Secure-IoT-Gateway-SoC/blob/main/proj_dir/rtl/uart%20file/LICENSE>))
+  - MIT license file in the UART IP subtree ([`rtl/uart_file/LICENSE`](<https://github.com/guntabhumesh/Secure-IoT-Gateway-SoC/blob/main/proj_dir/rtl/uart%20file/LICENSE>))
   - OpenCores/Richard Herveille copyright header in `i2c_master_top.v` ("may be used and distributed without restriction provided that this copyright statement is not removed")
   - FuseSoC core metadata (`aes_core.core`) for the AES core
   - Apache‑2.0 license on the upstream VeeR EL2 project (not yet vendored into this repo's tree — see §11)
 - No top-level `LICENSE` file is currently present at the repository root — consider adding one compatible with all vendored licenses (MIT, OpenCores' permissive notice, Apache‑2.0) if the repo will be distributed
 - Before adding a real SPI master, either finish importing `spi-master-master` under `proj_dir/rtl/` to match `run_spi.f`, or update the filelist to point at wherever it actually lands
-- `proj_dir/.gitignore` exists but generated VCS/Verdi artifacts are already committed in several places (`run/AN.DB/`, `run/simv_*`, `aes_core-master/sim/rtl_sim/run/csrc/`, `uart file/src/run/csrc/`, Verdi logs) — cleaning these out of history would shrink the repo substantially
+- `proj_dir/.gitignore` exists but generated VCS/Verdi artifacts are already committed in several places (`run/AN.DB/`, `run/simv_*`, `aes_core-master/sim/rtl_sim/run/csrc/`, `uart_file/src/run/csrc/`, Verdi logs) — cleaning these out of history would shrink the repo substantially
 
 ## 13) Quick reference commands
 ```bash

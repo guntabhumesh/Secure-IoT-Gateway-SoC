@@ -1,0 +1,41 @@
+[options]
+mode prove
+depth 20
+
+[engines]
+smtbmc z3
+
+[script]
+read -formal timer_props.sv
+read -formal timer_regs.sv
+read -formal timer_core.sv
+read -formal axi4lite_slave_adapter.sv
+read -formal timer_axi.sv
+read -formal timer_binds.sv
+prep -top timer_axi
+
+[files]
+../../rtl/verilog/timer_regs.sv
+../../rtl/verilog/timer_core.sv
+../../rtl/verilog/timer_axi.sv
+../../../../common/lib/rtl/axi4lite_slave_adapter.sv
+timer_props.sv
+timer_binds.sv
+
+[file timer_axi_binds.sv]
+module timer_axi_binds;
+    bind timer_axi axi_props props_axi (
+        .s_axi_aclk(aclk),
+        .s_axi_aresetn(aresetn),
+        .s_axi_awvalid(awvalid),
+        .s_axi_awready(awready),
+        .s_axi_wvalid(wvalid),
+        .s_axi_wready(wready),
+        .s_axi_bvalid(bvalid),
+        .s_axi_bready(bready),
+        .s_axi_arvalid(arvalid),
+        .s_axi_arready(arready),
+        .s_axi_rvalid(rvalid),
+        .s_axi_rready(rready)
+    );
+endmodule
