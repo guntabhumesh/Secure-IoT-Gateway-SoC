@@ -222,3 +222,4 @@ proj_dir/rtl/IP_timer/
 # Vivado generated project/run directories
 proj_dir/run/vivado_proj/
 proj_dir/run/xsim.dir/
+echo '*.tcl' >> .gitignore
