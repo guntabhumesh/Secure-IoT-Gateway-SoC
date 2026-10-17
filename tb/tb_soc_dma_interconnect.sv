@@ -94,6 +94,8 @@ module tb_soc_dma_interconnect;
     wire uart_tx_o;
     wire uart_rx_i = 1'b1;
     wire uart_irq;
+    wire dma_done_intr;
+    wire dma_error_intr;
 
     soc_top #(
         .DATA_WIDTH(DATA_WIDTH),
@@ -141,7 +143,10 @@ module tb_soc_dma_interconnect;
 
         .scl_pad_i(scl_pad_i), .scl_pad_o(scl_pad_o), .scl_padoen_o(scl_padoen_o),
         .sda_pad_i(sda_pad_i), .sda_pad_o(sda_pad_o), .sda_padoen_o(sda_padoen_o),
-        .i2c_irq(i2c_irq), .uart_tx_o(uart_tx_o), .uart_rx_i(uart_rx_i), .uart_irq(uart_irq)
+        .i2c_irq(i2c_irq), .uart_tx_o(uart_tx_o), .uart_rx_i(uart_rx_i), .uart_irq(uart_irq),
+        .spi_clk_o(), .spi_cs_n_o(), .spi_mosi_o(), .spi_miso_i(1'b0),
+        .gpio_io(), .gpio_irq(),
+        .dma_done(dma_done_intr), .dma_error(dma_error_intr)
     );
 
     // AXI Write Task
@@ -228,8 +233,8 @@ module tb_soc_dma_interconnect;
     localparam [ADDR_WIDTH-1:0] DMA_LEN  = DMA_BASE + 32'h40;
     localparam [ADDR_WIDTH-1:0] DMA_CFG  = DMA_BASE + 32'h50;
 
-    localparam [ADDR_WIDTH-1:0] M03_ADDR = 32'h0300_0000;
-    localparam [ADDR_WIDTH-1:0] M04_ADDR = 32'h0400_0000;
+    localparam [ADDR_WIDTH-1:0] SRC_ADDR = 32'h0500_0000; // Program RAM (m05)
+    localparam [ADDR_WIDTH-1:0] DST_ADDR = 32'h0600_0000; // Data RAM (m06)
 
     integer pass_cnt = 0;
     integer fail_cnt = 0;
@@ -240,32 +245,32 @@ module tb_soc_dma_interconnect;
         rst_n = 1'b1;
         repeat(10) @(posedge clk);
 
-        $display("\n--- Step 1: Write test pattern to Source (M03) ---");
-        axi_write(M03_ADDR, 32'hCAFEBABE);
-        axi_read(M03_ADDR, rd_data);
+        $display("\n--- Step 1: Write test pattern to Source (Prog RAM m05) ---");
+        axi_write(SRC_ADDR, 32'hCAFEBABE);
+        axi_read(SRC_ADDR, rd_data);
         if (rd_data === 32'hCAFEBABE) begin
-            $display("  [PASS] M03 correctly written with CAFEBABE");
+            $display("  [PASS] SRC correctly written with CAFEBABE");
         end else begin
-            $display("  [FAIL] M03 readback = 0x%08h, expected 0xCAFEBABE", rd_data);
+            $display("  [FAIL] SRC readback = 0x%08h, expected 0xCAFEBABE", rd_data);
         end
 
-        $display("\n--- Step 2: Write test pattern to Destination (M04) to clear it ---");
-        axi_write(M04_ADDR, 32'h00000000);
-        axi_read(M04_ADDR, rd_data);
+        $display("\n--- Step 2: Write test pattern to Destination (Data RAM m06) to clear it ---");
+        axi_write(DST_ADDR, 32'h00000000);
+        axi_read(DST_ADDR, rd_data);
         if (rd_data === 32'h00000000) begin
-            $display("  [PASS] M04 correctly cleared to 0");
+            $display("  [PASS] DST correctly cleared to 0");
         end else begin
-            $display("  [FAIL] M04 readback = 0x%08h", rd_data);
+            $display("  [FAIL] DST readback = 0x%08h", rd_data);
         end
 
         $display("\n--- Step 3: Configure DMA via AXI ---");
-        axi_write(DMA_SRC, M03_ADDR);
-        axi_write(DMA_DST, M04_ADDR);
-        axi_write(DMA_LEN, 32'd4); // 4 bytes (1 word) to avoid burst issues with dummy_axi_slave
+        axi_write(DMA_SRC, SRC_ADDR);
+        axi_write(DMA_DST, DST_ADDR);
+        axi_write(DMA_LEN, 32'd4); // 4 bytes (1 word)
         axi_write(DMA_CFG, 32'h4); // Enable descriptor 0 (bit 2)
 
         axi_read(DMA_SRC, rd_data);
-        if (rd_data === M03_ADDR) $display("  [PASS] DMA SRC configured correctly");
+        if (rd_data === SRC_ADDR) $display("  [PASS] DMA SRC configured correctly");
         else $display("  [FAIL] DMA SRC readback = 0x%08h", rd_data);
 
         axi_read(DMA_DST, rd_data);
@@ -297,13 +302,13 @@ module tb_soc_dma_interconnect;
             fail_cnt = fail_cnt + 1;
         end
 
-        $display("\n--- Step 6: Verify Destination Data (M04) ---");
-        axi_read(M04_ADDR, rd_data);
+        $display("\n--- Step 6: Verify Destination Data (Data RAM m06) ---");
+        axi_read(DST_ADDR, rd_data);
         if (rd_data === 32'hCAFEBABE) begin
             $display("  [PASS] DMA successfully transferred data: 0x%08h", rd_data);
             pass_cnt = pass_cnt + 1;
         end else begin
-            $display("  [FAIL] M04 data mismatch: got 0x%08h, expected 0xCAFEBABE", rd_data);
+            $display("  [FAIL] DST data mismatch: got 0x%08h, expected 0xCAFEBABE", rd_data);
             fail_cnt = fail_cnt + 1;
         end
 

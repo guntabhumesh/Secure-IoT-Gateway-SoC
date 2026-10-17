@@ -24,6 +24,10 @@ _start:
     li   t0, 0xAAAAAAAA        /* sideeffect=1, cacheable=0 for all 16 regions */
     csrw 0x7c0, t0
 
+    /* Set up mtvec to point to trap_handler */
+    la   t0, trap_handler
+    csrw mtvec, t0
+
     /* Set stack pointer to top of DCCM */
     la   sp, _stack_top
 
@@ -43,3 +47,7 @@ bss_done:
     /* Spin forever if main returns */
 spin:
     j    spin
+
+    .align 4
+trap_handler:
+    j    trap_handler

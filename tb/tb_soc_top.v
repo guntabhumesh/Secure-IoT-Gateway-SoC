@@ -218,7 +218,18 @@ module tb_soc_top;
         // UART
         .uart_tx_o(uart_tx),
         .uart_rx_i(uart_rx),
-        .uart_irq()
+        .uart_irq(),
+        // SPI
+        .spi_clk_o(),
+        .spi_cs_n_o(),
+        .spi_mosi_o(),
+        .spi_miso_i(1'b0),
+        // GPIO
+        .gpio_io(),
+        .gpio_irq(),
+        // DMA
+        .dma_done(),
+        .dma_error()
     );
 
     // ══════════════════════════════════════════════════════════════════════

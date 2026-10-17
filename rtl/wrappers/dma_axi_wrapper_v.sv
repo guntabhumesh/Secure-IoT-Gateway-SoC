@@ -91,37 +91,13 @@ module dma_axi_wrapper_v #(
     s_axi_mosi_t  dma_m_mosi;
     s_axi_miso_t  dma_m_miso;
 
-    // Address latching for write and read steering
-    logic w_steer;
-    logic r_steer;
-
-    always_ff @(posedge clk or posedge rst) begin
-        if (rst) begin
-            w_steer <= 1'b0;
-            r_steer <= 1'b0;
-        end else begin
-            if (csr_awvalid)
-                w_steer <= csr_awaddr[2];
-            
-            if (csr_arvalid)
-                r_steer <= csr_araddr[2];
-        end
-    end
-
-    logic current_w_steer;
-    logic current_r_steer;
-    assign current_w_steer = csr_awvalid ? csr_awaddr[2] : w_steer;
-    assign current_r_steer = csr_arvalid ? csr_araddr[2] : r_steer;
-
     // Connect CSR MOSI
     assign dma_csr_mosi.awid    = csr_awid;
     assign dma_csr_mosi.awaddr  = csr_awaddr;
     assign dma_csr_mosi.awprot  = axi_prot_t'(csr_awprot);
     assign dma_csr_mosi.awvalid = csr_awvalid;
-    // Duplicate 32-bit data to both halves of 64-bit bus
-    assign dma_csr_mosi.wdata   = {csr_wdata, csr_wdata};
-    // Steer the 4-bit strobe to the upper or lower half based on awaddr[2]
-    assign dma_csr_mosi.wstrb   = current_w_steer ? {csr_wstrb, 4'h0} : {4'h0, csr_wstrb};
+    assign dma_csr_mosi.wdata   = csr_wdata;
+    assign dma_csr_mosi.wstrb   = csr_wstrb;
     assign dma_csr_mosi.wvalid  = csr_wvalid;
     assign dma_csr_mosi.bready  = csr_bready;
     assign dma_csr_mosi.arid    = csr_arid;
@@ -138,8 +114,7 @@ module dma_axi_wrapper_v #(
     assign csr_bvalid  = dma_csr_miso.bvalid;
     assign csr_arready = dma_csr_miso.arready;
     assign csr_rid     = dma_csr_miso.rid;
-    // Select the correct 32-bit half from the 64-bit read data based on araddr[2]
-    assign csr_rdata   = current_r_steer ? dma_csr_miso.rdata[63:32] : dma_csr_miso.rdata[31:0];
+    assign csr_rdata   = dma_csr_miso.rdata;
     assign csr_rresp   = dma_csr_miso.rresp;
     assign csr_rlast   = 1'b1; // AXI4-Lite has no bursts
     assign csr_rvalid  = dma_csr_miso.rvalid;

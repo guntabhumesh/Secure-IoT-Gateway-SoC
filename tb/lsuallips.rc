@@ -1,0 +1,222 @@
+Magic 271485
+Revision Verdi_U-2023.03-SP1
+
+; Window Layout <x> <y> <width> <height> <signalwidth> <valuewidth>
+viewPort 0 25 1600 706 199 339
+
+; File list:
+; openDirFile [-d delimiter] [-s time_offset] [-rf auto_bus_rule_file] path_name file_name
+openDirFile -d / "" "/home/student/Documents/Secure-IoT-Gateway-SoC (2)/Secure-IoT-Gateway-SoC/dump_all_ip.fsdb"
+
+; file time scale:
+; fileTimeScale ### s|ms|us|ns|ps
+
+; signal spacing:
+signalSpacing 5
+
+; windowTimeUnit is used for zoom, cursor & marker
+; waveform viewport range
+zoom 0.000000 1106460050.000000
+cursor 376835000.000000
+marker 0.000000
+
+; user define markers
+; userMarker time_pos marker_name color linestyle
+; visible top row signal index
+top 95
+; marker line index
+markerPos 126
+
+; event list
+; addEvent event_name event_expression
+; curEvent event_name
+
+
+
+COMPLEX_EVENT_BEGIN
+
+
+COMPLEX_EVENT_END
+
+
+
+; toolbar current search type
+; curSTATUS search_type
+curSTATUS ByChange
+
+
+addGroup "G1"
+activeDirFile "" "/home/student/Documents/Secure-IoT-Gateway-SoC (2)/Secure-IoT-Gateway-SoC/dump_all_ip.fsdb"
+addSignal -h 15 -UNSIGNED -HEX /tb_soc_all_ip_veer/dut/u_soc/u_ic/s00_axi_araddr[31:0]
+addSignal -h 15 -holdScope s00_axi_arready
+addSignal -h 15 -holdScope s00_axi_arvalid
+addSignal -h 15 -UNSIGNED -HEX -holdScope s00_axi_awaddr[31:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope s00_axi_awburst[1:0]
+addSignal -h 15 -holdScope s00_axi_awready
+addSignal -h 15 -holdScope s00_axi_awvalid
+addSignal -h 15 -UNSIGNED -HEX -holdScope s00_axi_bid[7:0]
+addSignal -h 15 -holdScope s00_axi_bready
+addSignal -h 15 -UNSIGNED -HEX -holdScope s00_axi_bresp[1:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope s00_axi_rdata[31:0]
+addSignal -h 15 -holdScope s00_axi_rready
+addSignal -h 15 -holdScope s00_axi_rvalid
+addSignal -h 15 -UNSIGNED -HEX -holdScope s00_axi_wdata[31:0]
+addSignal -h 15 -holdScope s00_axi_wlast
+addSignal -h 15 -holdScope s00_axi_wready
+addSignal -h 15 -holdScope s00_axi_wvalid
+addSignal -h 15 -UNSIGNED -HEX /tb_soc_all_ip_veer/dut/u_veer/dccm_rd_addr_hi[15:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope dccm_rd_addr_lo[15:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope dccm_rd_data_hi[38:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope dccm_rd_data_lo[38:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope dccm_wr_addr_hi[15:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope dccm_wr_addr_lo[15:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope dccm_wr_data_hi[38:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope dccm_wr_data_lo[38:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope lsu_axi_araddr[31:0]
+addSignal -h 15 -holdScope lsu_axi_arready
+addSignal -h 15 -holdScope lsu_axi_arvalid
+addSignal -h 15 -UNSIGNED -HEX -holdScope lsu_axi_awaddr[31:0]
+addSignal -h 15 -holdScope lsu_axi_awready
+addSignal -h 15 -holdScope lsu_axi_awvalid
+addSignal -h 15 -UNSIGNED -HEX -holdScope lsu_axi_bid[2:0]
+addSignal -h 15 -holdScope lsu_axi_bready
+addSignal -h 15 -UNSIGNED -HEX -holdScope lsu_axi_bresp[1:0]
+addSignal -h 15 -holdScope lsu_axi_bvalid
+addSignal -h 15 -UNSIGNED -HEX -holdScope lsu_axi_rdata[63:0]
+addSignal -h 15 -holdScope lsu_axi_rready
+addSignal -h 15 -holdScope lsu_axi_rvalid
+addSignal -h 15 -UNSIGNED -HEX -holdScope lsu_axi_wdata[63:0]
+addSignal -h 15 -holdScope lsu_axi_wready
+addSignal -h 15 -holdScope lsu_axi_wvalid
+addSignal -h 15 -UNSIGNED -HEX /tb_soc_all_ip_veer/dut/u_soc/u_uart/s_axi_araddr[31:0]
+addSignal -h 15 -holdScope s_axi_arready
+addSignal -h 15 -holdScope s_axi_arvalid
+addSignal -h 15 -UNSIGNED -HEX -holdScope s_axi_awaddr[31:0]
+addSignal -h 15 -holdScope s_axi_awready
+addSignal -h 15 -holdScope s_axi_awvalid
+addSignal -h 15 -holdScope s_axi_bready
+addSignal -h 15 -UNSIGNED -HEX -holdScope s_axi_bresp[1:0]
+addSignal -h 15 -holdScope s_axi_bvalid
+addSignal -h 15 -UNSIGNED -HEX -holdScope s_axi_rdata[31:0]
+addSignal -h 15 -holdScope s_axi_rready
+addSignal -h 15 -holdScope s_axi_rvalid
+addSignal -h 15 -UNSIGNED -HEX -holdScope s_axi_wdata[31:0]
+addSignal -h 15 -holdScope s_axi_wready
+addSignal -h 15 -holdScope s_axi_wvalid
+addSignal -h 15 -UNSIGNED -HEX -holdScope uart_araddr_i[4:0]
+addSignal -h 15 -holdScope uart_rx_i
+addSignal -h 15 -holdScope uart_tx_o
+addSignal -h 15 /tb_soc_all_ip_veer/dut/u_soc/u_aes/aes_kld
+addSignal -h 15 -holdScope aes_ld
+addSignal -h 15 -holdScope dec_done
+addSignal -h 15 -UNSIGNED -HEX -holdScope dec_text_out[127:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope enc_text_out[127:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope s_axi_araddr[31:0]
+addSignal -h 15 -holdScope s_axi_arready
+addSignal -h 15 -holdScope s_axi_arvalid
+addSignal -h 15 -UNSIGNED -HEX -holdScope s_axi_awaddr[31:0]
+addSignal -h 15 -holdScope s_axi_awready
+addSignal -h 15 -holdScope s_axi_awvalid
+addSignal -h 15 -holdScope s_axi_bready
+addSignal -h 15 -UNSIGNED -HEX -holdScope s_axi_bresp[1:0]
+addSignal -h 15 -holdScope s_axi_bvalid
+addSignal -h 15 -UNSIGNED -HEX -holdScope s_axi_rdata[31:0]
+addSignal -h 15 -holdScope s_axi_rready
+addSignal -h 15 -holdScope s_axi_rvalid
+addSignal -h 15 -UNSIGNED -HEX -holdScope s_axi_wdata[31:0]
+addSignal -h 15 -holdScope s_axi_wready
+addSignal -h 15 -holdScope s_axi_wvalid
+addSignal -h 15 /tb_soc_all_ip_veer/dut/u_soc/u_aes/u_enc/done
+addSignal -h 15 -UNSIGNED -HEX -holdScope key[127:0]
+addSignal -h 15 -holdScope ld
+addSignal -h 15 -UNSIGNED -HEX -holdScope text_in[127:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope text_out[127:0]
+addSignal -h 15 /tb_soc_all_ip_veer/dut/u_soc/u_aes/u_dec/kdone
+addSignal -h 15 -UNSIGNED -HEX -holdScope key[127:0]
+addSignal -h 15 -holdScope kld
+addSignal -h 15 -holdScope ld
+addSignal -h 15 -UNSIGNED -HEX -holdScope text_in[127:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope text_out[127:0]
+addSignal -h 15 -holdScope done
+addSignal -h 15 /tb_soc_all_ip_veer/dut/u_soc/u_i2c/scl_pad_i
+addSignal -h 15 -holdScope sda_pad_i
+addSignal -h 15 /tb_soc_all_ip_veer/dut/u_soc/u_spi/axi_spi_ctrl_i0/spi_busy
+addSignal -h 15 -holdScope spi_clk_o
+addSignal -h 15 -holdScope spi_miso_i
+addSignal -h 15 -holdScope spi_mosi_o
+addSignal -h 15 -UNSIGNED -HEX -holdScope tx_data[7:0]
+addSignal -h 15 -UNSIGNED -HEX /tb_soc_all_ip_veer/dut/u_soc/u_gpio/u_gpio_regs/gpio_i[31:0]
+addSignal -h 15 -UNSIGNED -HEX /tb_soc_all_ip_veer/dut/u_soc/u_gpio/u_gpio_wrapper/i[31:0]
+addSignal -h 15 -UNSIGNED -HEX /tb_soc_all_ip_veer/dut/u_soc/u_dma_wrapper_v/u_dma_wrapper/csr_rresp_tmp[1:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope dma_desc_dst_vec[63:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope dma_desc_en[1:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope dma_desc_src_vec[63:0]
+addSignal -h 15 -holdScope dma_done_o
+addSignal -h 15 -UNSIGNED -HEX /tb_soc_all_ip_veer/dut/u_soc/u_dma_wrapper_v/u_dma_wrapper/u_csr_dma/i_araddr[7:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope i_awaddr[7:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope i_wdata[63:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope o_rdata[63:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope o_dma_desc_dst_addr_dst_addr[63:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope w_register_write_data[63:0]
+addSignal -h 15 -UNSIGNED -HEX /tb_soc_all_ip_veer/dut/u_soc/u_ic/s02_axi_araddr[31:0]
+addSignal -h 15 -holdScope s02_axi_arready
+addSignal -h 15 -holdScope s02_axi_arvalid
+addSignal -h 15 -UNSIGNED -HEX -holdScope s02_axi_awaddr[31:0]
+addSignal -h 15 -holdScope s02_axi_awready
+addSignal -h 15 -holdScope s02_axi_awvalid
+addSignal -h 15 -holdScope s02_axi_bready
+addSignal -h 15 -UNSIGNED -HEX -holdScope s02_axi_bresp[1:0]
+addSignal -h 15 -holdScope s02_axi_bvalid
+addSignal -h 15 -UNSIGNED -HEX -holdScope s02_axi_rdata[31:0]
+addSignal -h 15 -holdScope s02_axi_rready
+addSignal -h 15 -holdScope s02_axi_rvalid
+addSignal -h 15 -UNSIGNED -HEX -holdScope s02_axi_wdata[31:0]
+addSignal -h 15 -holdScope s02_axi_wready
+addSignal -h 15 -holdScope s02_axi_wvalid
+addGroup "G2"
+
+; getSignalForm Scope Hierarchy Status
+; active file of getSignalForm
+activeDirFile "" "/home/student/Documents/Secure-IoT-Gateway-SoC (2)/Secure-IoT-Gateway-SoC/dump_all_ip.fsdb"
+
+GETSIGNALFORM_SCOPE_HIERARCHY_BEGIN
+getSignalForm close
+
+"/_vcs_msglog"
+"/tb_soc_all_ip_veer"
+"/tb_soc_all_ip_veer/dut"
+"/tb_soc_all_ip_veer/dut/u_soc"
+"/tb_soc_all_ip_veer/dut/u_soc/u_uart"
+"/tb_soc_all_ip_veer/dut/u_veer"
+
+SCOPE_LIST_BEGIN
+"/_vcs_msglog"
+"/tb_soc_all_ip_veer/dut/u_soc/u_ic/axi_interconnect_inst"
+"/tb_soc_all_ip_veer/dut/u_soc/u_ic"
+"/tb_soc_all_ip_veer"
+"/tb_soc_all_ip_veer/dut"
+"/tb_soc_all_ip_veer/dut/Gen_dccm_enable"
+"/tb_soc_all_ip_veer/dut/u_soc"
+"/tb_soc_all_ip_veer/dut/u_soc/u_ic/axi_interconnect_inst/arb_inst"
+"/tb_soc_all_ip_veer/dut/u_veer"
+"/tb_soc_all_ip_veer/dut/u_soc/u_uart"
+"/tb_soc_all_ip_veer/dut/u_soc/u_aes"
+"/tb_soc_all_ip_veer/dut/u_soc/u_aes/u_enc"
+"/tb_soc_all_ip_veer/dut/u_soc/u_aes/u_dec"
+"/tb_soc_all_ip_veer/dut/u_soc/u_i2c"
+"/tb_soc_all_ip_veer/dut/u_soc/u_spi"
+"/tb_soc_all_ip_veer/dut/u_soc/u_spi/axi_spi_ctrl_i0"
+"/tb_soc_all_ip_veer/dut/u_soc/u_prog_mem"
+"/tb_soc_all_ip_veer/dut/u_soc/u_gpio"
+"/tb_soc_all_ip_veer/dut/u_soc/u_gpio/u_gpio_regs"
+"/tb_soc_all_ip_veer/dut/u_soc/u_gpio/u_gpio_wrapper"
+"/tb_soc_all_ip_veer/dccm_ecc_fixup"
+"/tb_soc_all_ip_veer/dut/u_soc/u_data_mem"
+"/tb_soc_all_ip_veer/dut/u_soc/u_dma_wrapper_v"
+"/tb_soc_all_ip_veer/dut/u_soc/u_dma_wrapper_v/u_dma_wrapper"
+"/tb_soc_all_ip_veer/dut/u_soc/u_dma_wrapper_v/u_dma_wrapper/u_csr_dma"
+SCOPE_LIST_END
+
+GETSIGNALFORM_SCOPE_HIERARCHY_END
+
+

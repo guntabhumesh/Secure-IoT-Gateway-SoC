@@ -17,10 +17,13 @@ SECTIONS {
     .text : {
         *(.text.init)
         *(.text .text.*)
-        *(.rodata .rodata.*)
     } > ICCM
 
     . = 0xF0040000;
+
+    .rodata : {
+        *(.rodata .rodata.*)
+    } > DCCM
 
     .data : {
         *(.data .data.*)
@@ -35,6 +38,6 @@ SECTIONS {
         _bss_end = .;
     } > DCCM
 
-    /* Stack: 4 KB at end of DCCM */
-    _stack_top = ORIGIN(DCCM) + LENGTH(DCCM);
+    /* Stack: 4 KB at top of DCCM */
+    _stack_top = ORIGIN(DCCM) + LENGTH(DCCM) - 16;
 }

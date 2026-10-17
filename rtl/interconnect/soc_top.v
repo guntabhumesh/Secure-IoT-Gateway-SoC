@@ -132,7 +132,11 @@ module soc_top #(
 
     // ── GPIO external signals ─────────────────────────────────────────
     inout  wire [31:0] gpio_io,
-    output wire        gpio_irq
+    output wire        gpio_irq,
+
+    // ── DMA status signals ────────────────────────────────────────────
+    output wire        dma_done,
+    output wire        dma_error
 );
 
     // Active-high reset for logic that needs it
@@ -597,6 +601,8 @@ module soc_top #(
         .wb_cyc_o        (wb_cyc),
         .wb_ack_i        (wb_ack)
     );
+    assign m00_buser = 1'b0;
+    assign m00_ruser = 1'b0;
 
     // ── I2C master (Wishbone slave) ───────────────────────────────────
     i2c_master_top u_i2c (
@@ -650,6 +656,8 @@ module soc_top #(
         .s_axi_rresp   (m01_rresp),   .s_axi_rlast   (m01_rlast),
         .s_axi_rvalid  (m01_rvalid),  .s_axi_rready  (m01_rready)
     );
+    assign m01_buser = 1'b0;
+    assign m01_ruser = 1'b0;
 
     // ══════════════════════════════════════════════════════════════════
     // m02: AXI UART slave
@@ -685,6 +693,8 @@ module soc_top #(
         .uart_rx_i     (uart_rx_i),
         .uart_irq_o    (uart_irq)
     );
+    assign m02_buser = 1'b0;
+    assign m02_ruser = 1'b0;
 
     // ══════════════════════════════════════════════════════════════════
     // m03-m10: Dummy AXI slaves
@@ -841,9 +851,6 @@ module soc_top #(
     `DUMMY_INST(09, 9)  `DUMMY_INST(10,10)
 
 
-    wire dma_done;
-    wire dma_error;
-
     dma_axi_wrapper_v #(
         .DATA_WIDTH(DATA_WIDTH),
         .ADDR_WIDTH(ADDR_WIDTH),
@@ -878,6 +885,8 @@ module soc_top #(
         .dma_done(dma_done),
         .dma_error(dma_error)
     );
+    assign m11_buser = 1'b0;
+    assign m11_ruser = 1'b0;
 
 endmodule
 

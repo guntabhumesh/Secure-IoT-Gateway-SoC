@@ -74,6 +74,8 @@ module tb_soc_all_ips ();
     wire [31:0] gpio_io;
     logic gpio_irq;
 
+    logic dma_done, dma_error;
+
     assign scl_pad_i = 1'b1;
     assign sda_pad_i = 1'b1;
     assign uart_rx_i = 1'b1;
@@ -125,7 +127,8 @@ module tb_soc_all_ips ();
 
         .spi_clk_o(spi_clk_o), .spi_cs_n_o(spi_cs_n_o), .spi_mosi_o(spi_mosi_o), .spi_miso_i(spi_miso_i),
 
-        .gpio_io(gpio_io), .gpio_irq(gpio_irq)
+        .gpio_io(gpio_io), .gpio_irq(gpio_irq),
+        .dma_done(dma_done), .dma_error(dma_error)
     );
 
     // Initializations
@@ -241,29 +244,29 @@ module tb_soc_all_ips ();
         $display("\n-----------------------------------------------------------");
         $display("--- CONFIGURING AES_CORE ---");
         $display("-----------------------------------------------------------");
-        axi_write("AES_CORE", "KEY0", 32'h0100_0008, 32'h2B7E1516, "Cryptographic Key Word 0 (Bits [127:96])");
-        axi_write("AES_CORE", "KEY1", 32'h0100_000C, 32'h28AED2A6, "Cryptographic Key Word 1 (Bits [95:64])");
-        axi_write("AES_CORE", "KEY2", 32'h0100_0010, 32'hABF71588, "Cryptographic Key Word 2 (Bits [63:32])");
-        axi_write("AES_CORE", "KEY3", 32'h0100_0014, 32'h09CF4F3C, "Cryptographic Key Word 3 (Bits [31:0])");
+        axi_write("AES_CORE", "KEY0", 32'h0100_0004, 32'h2B7E1516, "Cryptographic Key Word 0 (Bits [127:96])");
+        axi_write("AES_CORE", "KEY1", 32'h0100_0008, 32'h28AED2A6, "Cryptographic Key Word 1 (Bits [95:64])");
+        axi_write("AES_CORE", "KEY2", 32'h0100_000C, 32'hABF71588, "Cryptographic Key Word 2 (Bits [63:32])");
+        axi_write("AES_CORE", "KEY3", 32'h0100_0010, 32'h09CF4F3C, "Cryptographic Key Word 3 (Bits [31:0])");
         
-        axi_write("AES_CORE", "TXIN0", 32'h0100_0018, 32'h6BC1BEE2, "Plaintext Input Word 0 (Bits [127:96])");
-        axi_write("AES_CORE", "TXIN1", 32'h0100_001C, 32'h2E409F96, "Plaintext Input Word 1 (Bits [95:64])");
-        axi_write("AES_CORE", "TXIN2", 32'h0100_0020, 32'hE93D7E11, "Plaintext Input Word 2 (Bits [63:32])");
-        axi_write("AES_CORE", "TXIN3", 32'h0100_0024, 32'h7393172A, "Plaintext Input Word 3 (Bits [31:0])");
+        axi_write("AES_CORE", "TXIN0", 32'h0100_0014, 32'h6BC1BEE2, "Plaintext Input Word 0 (Bits [127:96])");
+        axi_write("AES_CORE", "TXIN1", 32'h0100_0018, 32'h2E409F96, "Plaintext Input Word 1 (Bits [95:64])");
+        axi_write("AES_CORE", "TXIN2", 32'h0100_001C, 32'hE93D7E11, "Plaintext Input Word 2 (Bits [63:32])");
+        axi_write("AES_CORE", "TXIN3", 32'h0100_0020, 32'h7393172A, "Plaintext Input Word 3 (Bits [31:0])");
         
-        axi_write("AES_CORE", "CTRL",  32'h0100_0000, 32'h00000001, "Control Register - Bit 0 is set to trigger the start of encryption.");
+        axi_write("AES_CORE", "CTRL",  32'h0100_0000, 32'h00000003, "Control Register - Bit 0 (LD) starts encryption, Bit 1 (KLD) loads key.");
         
         tmo = 0;
         read_val = 0;
-        while ((read_val & 1) == 0 && tmo < 100) begin
-            axi_read("AES_CORE", "STATUS", 32'h0100_0004, read_val, "Status Register - Polling Bit 0 to check if encryption is complete.");
+        while ((read_val & 32'h0001_0000) == 0 && tmo < 100) begin
+            axi_read("AES_CORE", "STATUS", 32'h0100_0000, read_val, "Status Register (CTRL[16]) - Polling Bit 16 to check if encryption is complete.");
             tmo++;
         end
         
-        axi_read("AES_CORE", "TXOUT0", 32'h0100_0028, read_val, "Ciphertext Output Word 0 (Bits [127:96])");
-        axi_read("AES_CORE", "TXOUT1", 32'h0100_002C, read_val, "Ciphertext Output Word 1 (Bits [95:64])");
-        axi_read("AES_CORE", "TXOUT2", 32'h0100_0030, read_val, "Ciphertext Output Word 2 (Bits [63:32])");
-        axi_read("AES_CORE", "TXOUT3", 32'h0100_0034, read_val, "Ciphertext Output Word 3 (Bits [31:0])");
+        axi_read("AES_CORE", "TXOUT0", 32'h0100_0024, read_val, "Ciphertext Output Word 0 (Bits [127:96])");
+        axi_read("AES_CORE", "TXOUT1", 32'h0100_0028, read_val, "Ciphertext Output Word 1 (Bits [95:64])");
+        axi_read("AES_CORE", "TXOUT2", 32'h0100_002C, read_val, "Ciphertext Output Word 2 (Bits [63:32])");
+        axi_read("AES_CORE", "TXOUT3", 32'h0100_0030, read_val, "Ciphertext Output Word 3 (Bits [31:0])");
 
         // -----------------------------------------------------------
         // Test UART (m02 @ 0x0200_0000)

@@ -27,19 +27,19 @@
 /* --- AES Registers --- */
 #define AES_BASE    0x01000000UL
 #define AES_CTRL    (*(volatile uint32_t *)(AES_BASE + 0x00))
-#define AES_STATUS  (*(volatile uint32_t *)(AES_BASE + 0x04))
-#define AES_KEY0    (*(volatile uint32_t *)(AES_BASE + 0x08))
-#define AES_KEY1    (*(volatile uint32_t *)(AES_BASE + 0x0C))
-#define AES_KEY2    (*(volatile uint32_t *)(AES_BASE + 0x10))
-#define AES_KEY3    (*(volatile uint32_t *)(AES_BASE + 0x14))
-#define AES_TXIN0   (*(volatile uint32_t *)(AES_BASE + 0x18))
-#define AES_TXIN1   (*(volatile uint32_t *)(AES_BASE + 0x1C))
-#define AES_TXIN2   (*(volatile uint32_t *)(AES_BASE + 0x20))
-#define AES_TXIN3   (*(volatile uint32_t *)(AES_BASE + 0x24))
-#define AES_TXOUT0  (*(volatile uint32_t *)(AES_BASE + 0x28))
-#define AES_TXOUT1  (*(volatile uint32_t *)(AES_BASE + 0x2C))
-#define AES_TXOUT2  (*(volatile uint32_t *)(AES_BASE + 0x30))
-#define AES_TXOUT3  (*(volatile uint32_t *)(AES_BASE + 0x34))
+#define AES_STATUS  (*(volatile uint32_t *)(AES_BASE + 0x00))
+#define AES_KEY0    (*(volatile uint32_t *)(AES_BASE + 0x04))
+#define AES_KEY1    (*(volatile uint32_t *)(AES_BASE + 0x08))
+#define AES_KEY2    (*(volatile uint32_t *)(AES_BASE + 0x0C))
+#define AES_KEY3    (*(volatile uint32_t *)(AES_BASE + 0x10))
+#define AES_TXIN0   (*(volatile uint32_t *)(AES_BASE + 0x14))
+#define AES_TXIN1   (*(volatile uint32_t *)(AES_BASE + 0x18))
+#define AES_TXIN2   (*(volatile uint32_t *)(AES_BASE + 0x1C))
+#define AES_TXIN3   (*(volatile uint32_t *)(AES_BASE + 0x20))
+#define AES_TXOUT0  (*(volatile uint32_t *)(AES_BASE + 0x24))
+#define AES_TXOUT1  (*(volatile uint32_t *)(AES_BASE + 0x28))
+#define AES_TXOUT2  (*(volatile uint32_t *)(AES_BASE + 0x2C))
+#define AES_TXOUT3  (*(volatile uint32_t *)(AES_BASE + 0x30))
 
 
 static void uart_init(void)
@@ -95,11 +95,11 @@ int main(void)
     AES_TXIN2 = 0x313198a2;
     AES_TXIN3 = 0xe0370734;
 
-    /* Trigger Encryption (bit 0 of CTRL) */
-    AES_CTRL = 0x01;
+    /* Trigger Encryption and Key Load (bits 0 and 1 of CTRL) */
+    AES_CTRL = 0x03;
 
-    /* Wait for Encryption to Complete (bit 0 of STATUS) */
-    while ((AES_STATUS & 0x01) == 0)
+    /* Wait for Encryption to Complete (bit 16 of STATUS / CTRL) */
+    while ((AES_STATUS & (1U << 16)) == 0)
         ;
 
     /* Verify Ciphertext Output */

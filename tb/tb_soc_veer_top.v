@@ -211,6 +211,20 @@ module tb_soc_veer_top;
         .uart_rx_i        (uart_rx_i),
         .uart_irq         (uart_irq),
 
+        // SPI
+        .spi_clk_o        (),
+        .spi_cs_n_o       (),
+        .spi_mosi_o       (),
+        .spi_miso_i       (1'b0),
+
+        // GPIO
+        .gpio_io          (),
+        .gpio_irq         (),
+
+        // DMA
+        .dma_done         (),
+        .dma_error        (),
+
         // VeeR trace
         .trace_rv_i_insn_ip      (trace_rv_i_insn_ip),
         .trace_rv_i_address_ip   (trace_rv_i_address_ip),
