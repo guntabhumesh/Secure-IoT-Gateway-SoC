@@ -196,22 +196,22 @@ sequenceDiagram
     participant RAM as AXI SRAMs
     participant DMA as DMA Engine
 
-    CPU->>UART: 1. Loopback Test (Write 0x55 -> Read 0x55)
+    CPU->>UART: 1. Loopback Test (Send 0x55, Receive 0x55)
     UART-->>CPU: Loopback Match (UART:PASS)
-    CPU->>AES: 2. Load NIST Key & Plaintext, Assert LD
-    AES-->>CPU: Done; Out == 0x3925841D... (AES:PASS)
+    CPU->>AES: 2. Load NIST Key and Plaintext, Assert LD
+    AES-->>CPU: Done, Output Matches NIST Vector (AES:PASS)
     CPU->>SPI: 3. Assert CS0, Transmit Byte 0xA5
     SPI-->>CPU: Shift Out Complete (SPI:PASS)
     CPU->>GPIO: 4. Drive 0xDEADBEEF, Atomic Set/Clr/Tgl
-    GPIO-->>CPU: Readback == 0xDEAD00F0 (GPIO:PASS)
+    GPIO-->>CPU: Readback Matches 0xDEAD00F0 (GPIO:PASS)
     CPU->>I2C: 5. Generate START, Transmit 0xA0, Issue STOP
     I2C-->>CPU: Bus Transfer Finished (I2C:PASS)
-    CPU->>RAM: 6. Multi-word Read/Write to Prog & Data RAM
+    CPU->>RAM: 6. Multi-word Read/Write to Prog and Data RAM
     RAM-->>CPU: Data Verification Match (RAM:PASS)
     CPU->>DMA: 7. Config SRC=Prog RAM, DST=Data RAM, GO=1
-    DMA->>RAM: Autonomous Burst Copy (0xCAFEBABE)
+    DMA->>RAM: Autonomous Burst Copy of 0xCAFEBABE
     DMA-->>CPU: dma_done Asserted (DMA:PASS)
-    CPU->>UART: 8. Report Final Result: *** ALL IP TESTS PASSED ***
+    CPU->>UART: 8. Report Final Result: ALL IP TESTS PASSED
 ```
 
 ---
