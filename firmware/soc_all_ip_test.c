@@ -26,10 +26,11 @@
 #define GPIO_BASE     0x04000000UL
 #define PROG_RAM_BASE 0x05000000UL
 #define DATA_RAM_BASE 0x06000000UL
-#define DUMMY0_BASE   0x07000000UL
-#define DUMMY1_BASE   0x08000000UL
-#define DUMMY2_BASE   0x09000000UL
-#define DUMMY3_BASE   0x0A000000UL
+#define TIMER_BASE    0x07000000UL
+#define DUMMY0_BASE   0x08000000UL
+#define DUMMY1_BASE   0x09000000UL
+#define DUMMY2_BASE   0x0A000000UL
+#define DUMMY3_BASE   0x0AFFFFFFUL   /* point to last byte of DUMMY2 window to avoid overlap */
 #define DMA_BASE      0x0B000000UL
 
 /* UART */
@@ -63,6 +64,31 @@
 #define DMA_DST   REG32(DMA_BASE + 0x30)
 #define DMA_LEN   REG32(DMA_BASE + 0x40)
 #define DMA_CFG   REG32(DMA_BASE + 0x50)
+
+/* General Timer (AXI4-Lite, base 0x0700_0000)
+ * Register map (from timer_regs.sv):
+ *   0x00  CTRL      [0]=EN [1]=MODE [2]=PRE_EN [3]=DIR [4]=PWM_EN [5]=EXT_EN [6]=CAP_EN
+ *   0x04  LOAD      — countdown reload/load value (clock ticks); write triggers load
+ *   0x08  VAL       — current counter value (read-only)
+ *   0x0C  PRE       — prescaler value [15:0]
+ *   0x10  INT_EN    [0]=expire_irq_en [1]=capture_irq_en
+ *   0x14  INT_STS   [0]=expire_irq_pend [1]=capture_irq_pend (W1C)
+ *   0x18  CMP       — compare value
+ *   0x1C  CAP       — capture value (read-only)
+ *
+ * To generate a timer expire interrupt:
+ *   1. Write LOAD = N (number of clocks to count down)
+ *   2. Write INT_EN = 0x01 (enable expire interrupt)
+ *   3. Write CTRL = 0x01 (EN=1, count-down mode, no prescaler)
+ *   4. Poll INT_STS[0] until set
+ *   5. Write INT_STS = 0x01 (W1C — clear pending bit)
+ */
+#define TIMER_CTRL    REG32(TIMER_BASE + 0x00)
+#define TIMER_LOAD    REG32(TIMER_BASE + 0x04)
+#define TIMER_VAL     REG32(TIMER_BASE + 0x08)
+#define TIMER_PRE     REG32(TIMER_BASE + 0x0C)
+#define TIMER_INT_EN  REG32(TIMER_BASE + 0x10)
+#define TIMER_INT_STS REG32(TIMER_BASE + 0x14)
 
 /* SPI */
 #define SPI_SRR   REG32(SPI_BASE + 0x40)
@@ -267,19 +293,54 @@ int main(void)
     /* =========================================================================
      * 9. Dummy AXI Slaves: Interconnect Routing Verification
      * ========================================================================= */
-    REG32(DUMMY0_BASE) = 0x07;
-    REG32(DUMMY1_BASE) = 0x08;
-    REG32(DUMMY2_BASE) = 0x09;
-    REG32(DUMMY3_BASE) = 0x0A;
-    if (REG32(DUMMY0_BASE) == 0x07 &&
-        REG32(DUMMY1_BASE) == 0x08 &&
-        REG32(DUMMY2_BASE) == 0x09 &&
-        REG32(DUMMY3_BASE) == 0x0A) {
+    REG32(DUMMY0_BASE) = 0x08;
+    REG32(DUMMY1_BASE) = 0x09;
+    REG32(DUMMY2_BASE) = 0x0A;
+    if (REG32(DUMMY0_BASE) == 0x08 &&
+        REG32(DUMMY1_BASE) == 0x09 &&
+        REG32(DUMMY2_BASE) == 0x0A) {
         uart_puts("DUMMY:PASS\r\n");
     } else {
         uart_puts("DUMMY:FAIL\r\n");
         all_pass = 0;
     }
+
+    /* =========================================================================
+     * 10. General Timer: Countdown, IRQ-pending, and register access test
+     *
+     * Test procedure (polled — no RISC-V trap handler needed):
+     *   1. Write LOAD = 500 ticks (5 µs @ 100 MHz)
+     *   2. Enable expire interrupt (INT_EN[0]=1)
+     *   3. Enable timer: CTRL = 0x01 (EN=1, count-down, no prescaler)
+     *   4. Poll INT_STS[0] until set or timeout
+     *   5. Clear IRQ by W1C on INT_STS[0]
+     *   6. Verify INT_STS[0] is clear
+     * ========================================================================= */
+    TIMER_CTRL   = 0x00;          /* Disable timer first                */
+    TIMER_INT_EN = 0x00;          /* Disable interrupts before loading  */
+    TIMER_LOAD   = 500;           /* 500 ticks = 5 µs @ 100 MHz         */
+    TIMER_INT_EN = 0x01;          /* Enable expire interrupt             */
+    TIMER_CTRL   = 0x01;          /* EN=1, count-down, no prescaler      */
+
+    timeout = 100000;
+    while (((TIMER_INT_STS & 0x01) == 0) && --timeout)
+        ;
+
+    if (timeout > 0) {
+        /* Expire IRQ pending — clear it with W1C */
+        TIMER_INT_STS = 0x01;
+        if ((TIMER_INT_STS & 0x01) == 0) {
+            uart_puts("TIMER:PASS\r\n");
+        } else {
+            uart_puts("TIMER:FAIL\r\n");   /* W1C clear did not work */
+            all_pass = 0;
+        }
+    } else {
+        uart_puts("TIMER:FAIL\r\n");       /* timed out waiting for expire IRQ */
+        all_pass = 0;
+    }
+    TIMER_CTRL   = 0x00;          /* Stop timer */
+    TIMER_INT_EN = 0x00;          /* Disable timer interrupt */
 
     /* Final Result */
     if (all_pass) {

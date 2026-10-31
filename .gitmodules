@@ -1,12 +1,10 @@
 [submodule "rtl/core"]
-	path = rtl/core
-	url = https://github.com/chipsalliance/Cores-VeeR-EL2.git
-	ignore = dirty
+    path = rtl/core
+    url = https://github.com/chipsalliance/Cores-VeeR-EL2.git
 
 [submodule "rtl/dma"]
-	path = rtl/dma
-	url = https://github.com/aignacio/axi_dma.git
-	ignore = dirty
+    path = rtl/dma
+    url = https://github.com/aignacio/axi_dma.git
 
 [submodule "rtl/gpio"]
     path = rtl/gpio

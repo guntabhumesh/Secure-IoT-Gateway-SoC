@@ -1,0 +1,4 @@
+jtag_tck,input,1
+jtag_tms,input,1
+jtag_tdi,input,1
+jtag_tdo,output,1

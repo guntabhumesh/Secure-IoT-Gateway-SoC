@@ -37,7 +37,7 @@ module tb_soc_all_ip_veer;
     localparam IDW       = 8;
     localparam SW        = DW/8;
     localparam CLK_HALF  = 5;            // 5 ns half-period → 100 MHz
-    localparam SIM_TIMEOUT = 200_000_000; // 200 ms in ns (sufficient for all UART output)
+    localparam SIM_TIMEOUT = 2_000_000_000; // 2 seconds in ns (covers timer + all UART output)
 
     // ── VeeR boot vector ───────────────────────────────────────────────
     // VeeR reset vector is 0xEE000000 (ICCM base).  The [31:1] representation is 0x77000000.
@@ -133,6 +133,7 @@ module tb_soc_all_ip_veer;
 
     // DMA status
     wire dma_done, dma_error;
+    wire timer_irq;               // General timer IRQ (wired to VeeR PIC extintsrc[1])
 
     // VeeR trace outputs
     wire [31:0] trace_rv_i_insn_ip;
@@ -437,6 +438,9 @@ module tb_soc_all_ip_veer;
         $fsdbDumpvars(1, dut.u_soc.u_data_mem);   // AXI RAM (data)
         $fsdbDumpvars(1, dut.u_soc.u_dma_wrapper_v); // DMA
 
+        // Dump general timer internals
+        $fsdbDumpvars(1, dut.u_soc.u_timer);         // General Timer
+
         // Dump the 64-to-32 AXI adapter
         $fsdbDumpvars(1, dut.u_lsu_adapter);
 
@@ -575,6 +579,7 @@ module tb_soc_all_ip_veer;
                     (dut.lsu_axi_awaddr[31:24] == 8'h04) ? "GPIO" :
                     (dut.lsu_axi_awaddr[31:24] == 8'h05) ? "PROG_RAM" :
                     (dut.lsu_axi_awaddr[31:24] == 8'h06) ? "DATA_RAM" :
+                    (dut.lsu_axi_awaddr[31:24] == 8'h07) ? "TIMER" :
                     (dut.lsu_axi_awaddr[31:24] == 8'h0B) ? "DMA"  :
                     "DUMMY/UNKNOWN");
             end
@@ -592,6 +597,7 @@ module tb_soc_all_ip_veer;
                         (dut.lsu_axi_araddr[31:24] == 8'h04) ? "GPIO" :
                         (dut.lsu_axi_araddr[31:24] == 8'h05) ? "PROG_RAM" :
                         (dut.lsu_axi_araddr[31:24] == 8'h06) ? "DATA_RAM" :
+                        (dut.lsu_axi_araddr[31:24] == 8'h07) ? "TIMER" :
                         (dut.lsu_axi_araddr[31:24] == 8'h0B) ? "DMA"  :
                         "DUMMY/UNKNOWN");
                 end

@@ -21,16 +21,32 @@ export VCS_HOME="${VCS_HOME:-/home/student/snps_tools_target/vcs/U-2023.03}"
 export VERDI_HOME="${VERDI_HOME:-/home/student/snps_tools_target/verdi/U-2023.03-SP1}"
 export SNPSLMD_LICENSE_FILE="${SNPSLMD_LICENSE_FILE:-27021@14.139.1.126}"
 export LM_LICENSE_FILE="${LM_LICENSE_FILE:-27021@14.139.1.126}"
-export PATH="$VCS_HOME/bin:$VERDI_HOME/bin:/opt/riscv/bin:$PATH"
+export PATH="$VCS_HOME/bin:$VERDI_HOME/bin:/home/student/riscv-toolchain/xpack-riscv-none-elf-gcc-13.2.0-2/bin:/opt/riscv/bin:$PATH"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT_DIR"
+
+# Detect toolchain prefix
+if command -v riscv-none-elf-gcc >/dev/null 2>&1; then
+    CC=riscv-none-elf-gcc
+    OBJCOPY=riscv-none-elf-objcopy
+elif command -v riscv64-unknown-elf-gcc >/dev/null 2>&1; then
+    CC=riscv64-unknown-elf-gcc
+    OBJCOPY=riscv64-unknown-elf-objcopy
+elif [ -f "/home/student/riscv-toolchain/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-gcc" ]; then
+    CC="/home/student/riscv-toolchain/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-gcc"
+    OBJCOPY="/home/student/riscv-toolchain/xpack-riscv-none-elf-gcc-13.2.0-2/bin/riscv-none-elf-objcopy"
+else
+    CC="/opt/riscv/bin/riscv64-unknown-elf-gcc"
+    OBJCOPY="/opt/riscv/bin/riscv64-unknown-elf-objcopy"
+fi
 
 do_fw() {
     echo "============================================================"
     echo "  1. Building Firmware (.elf -> .hex bank files)"
     echo "============================================================"
-    /opt/riscv/bin/riscv64-unknown-elf-gcc -march=rv32imc_zicsr -mabi=ilp32 -O2 \
+    echo "[INFO] Using GCC: $CC"
+    $CC -march=rv32imc_zicsr -mabi=ilp32 -O2 \
         -fno-delete-null-pointer-checks \
         -T firmware/link_iccm.ld -nostdlib -Wl,--gc-sections \
         firmware/startup.S firmware/soc_all_ip_test.c -o firmware/soc_all_ip_test.elf
@@ -49,14 +65,20 @@ def make_banks(bin_data, out_prefix):
         with open(f'{out_prefix}_bank{bank}.hex', 'w') as f:
             for w in bank_words:
                 f.write(f'{w:08x}\n')
+    return len(words)
 
-subprocess.run(['/opt/riscv/bin/riscv64-unknown-elf-objcopy', '-O', 'binary', '--only-section=.text', 'firmware/soc_all_ip_test.elf', 'firmware/iccm.bin'], check=True)
+subprocess.run(['$OBJCOPY', '-O', 'binary', '--only-section=.text', 'firmware/soc_all_ip_test.elf', 'firmware/iccm.bin'], check=True)
 with open('firmware/iccm.bin', 'rb') as f:
-    make_banks(f.read(), 'firmware/soc_all_ip_test')
+    w_iccm = make_banks(f.read(), 'firmware/soc_all_ip_test')
+print(f'[INFO] ICCM: {w_iccm} words generated across 4 banks.')
 
-subprocess.run(['/opt/riscv/bin/riscv64-unknown-elf-objcopy', '-O', 'binary', '--only-section=.rodata', '--only-section=.data', 'firmware/soc_all_ip_test.elf', 'firmware/dccm.bin'], check=True)
+subprocess.run(['$OBJCOPY', '-O', 'binary', '--only-section=.rodata', '--only-section=.data', 'firmware/soc_all_ip_test.elf', 'firmware/dccm.bin'], check=True)
 with open('firmware/dccm.bin', 'rb') as f:
-    make_banks(f.read(), 'firmware/soc_all_ip_test_dccm')
+    w_dccm = make_banks(f.read(), 'firmware/soc_all_ip_test_dccm')
+print(f'[INFO] DCCM: {w_dccm} words generated across 4 banks.')
+
+# Also generate monolithic .hex for reference
+subprocess.run(['$OBJCOPY', '-O', 'verilog', 'firmware/soc_all_ip_test.elf', 'firmware/soc_all_ip_test.hex'], check=True)
 "
     echo "[INFO] Firmware compiled and bank hex files generated successfully."
 }

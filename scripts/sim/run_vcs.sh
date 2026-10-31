@@ -14,16 +14,17 @@ echo "Compiling SPI & GPIO Testbench with VCS..."
 SPI_DIR="$ROOT_DIR/rtl/spi/src"
 GPIO_DIR="$ROOT_DIR/rtl/gpio/rtl/verilog"
 
-vcs -sverilog -full64 -debug_access+all \
+vcs -timescale=1ns/1ps -sverilog -full64 -debug_access+all \
     +incdir+${SPI_DIR}/include \
     ${SPI_DIR}/include/*.vh \
     ${SPI_DIR}/rtl/*.v \
     ${GPIO_DIR}/*.sv \
     "$ROOT_DIR/rtl/general_timer/lib/rtl/axi4lite_slave_adapter.sv" \
     "$ROOT_DIR/tb/tb_spi_gpio_vcs.sv" \
-    -top tb_spi_gpio_vcs
+    -top tb_spi_gpio_vcs \
+    -o simv_spi_gpio
 
 echo "Running Simulation..."
-./simv +vcs+lic+wait
+./simv_spi_gpio -no_save +vcs+lic+wait
 
 echo "Done!"

@@ -527,6 +527,10 @@ module soc_top_with_veer #(
     // =========================================================================
     // 6.  VeeR EL2 core instantiation
     // =========================================================================
+
+    // IRQ wire — declared here so it's available for the extintsrc_req
+    // connection in the VeeR instantiation below, and driven by u_soc later.
+    wire timer_irq;   // General timer IRQ → extintsrc_req[1]
     // Real SRAM interface driven by behavioral SRAM models below.
     // The el2_veer_wrapper exports ICCM/DCCM/ICache control signals through
     // the el2_mem_if interface; we wire them to simple behavioral reg-array
@@ -727,10 +731,25 @@ module soc_top_with_veer #(
         .jtag_tdi   (jtag_tdi),
         .jtag_tdo   (jtag_tdo),
 
-        // External interrupts — tie all to 0 for basic simulation
-        .extintsrc_req ({`RV_PIC_TOTAL_INT{1'b0}}),
+        // External interrupts — connect all IP IRQs to VeeR PIC
+        // IRQ priority (lower index = higher priority in default VeeR PIC config):
+        //   [1] = timer_irq  (general timer)
+        //   [2] = uart_irq   (UART RX/TX)
+        //   [3] = i2c_irq    (I2C transfer-complete)
+        //   [4] = gpio_irq   (GPIO edge-detect)
+        //   [5] = dma_done   (DMA transfer-complete)
+        //   [31:6] = 0       (reserved)
+        .extintsrc_req ({
+            {(`RV_PIC_TOTAL_INT - 5){1'b0}},  // [31:6] unused
+            dma_done,                           // [5]
+            gpio_irq,                           // [4]
+            i2c_irq,                            // [3]
+            uart_irq,                           // [2]
+            timer_irq                           // [1]
+        }),
 
-        // Timer interrupt — tie off
+        // Timer interrupt — tie off (VeeR internal MTIME not used; timer IP
+        // raises interrupts through the PIC via extintsrc_req above)
         .timer_int  (1'b0),
 
         // Soft interrupt — tie off
@@ -794,6 +813,7 @@ module soc_top_with_veer #(
     //     s00 is driven by VeeR LSU (via width-adapter above).
     //     s01 is passed through to the top-level port.
     // =========================================================================
+
     soc_top #(
         .DATA_WIDTH (DATA_WIDTH),
         .ADDR_WIDTH (ADDR_WIDTH),
@@ -906,7 +926,10 @@ module soc_top_with_veer #(
 
         // DMA
         .dma_done   (dma_done),
-        .dma_error  (dma_error)
+        .dma_error  (dma_error),
+
+        // General Timer interrupt (wired to VeeR PIC extintsrc_req[1])
+        .timer_irq  (timer_irq)
     );
 
     // =========================================================================

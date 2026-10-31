@@ -125,12 +125,10 @@ module soc_top_with_veer #(
     input  wire        sda_pad_i,
     output wire        sda_pad_o,
     output wire        sda_padoen_o,
-    output wire        i2c_irq,
 
     // ── UART pads ─────────────────────────────────────────────────────────
     output wire        uart_tx_o,
     input  wire        uart_rx_i,
-    output wire        uart_irq,
 
     // ── SPI external signals ──────────────────────────────────────────
     output wire        spi_clk_o,
@@ -140,11 +138,6 @@ module soc_top_with_veer #(
 
     // ── GPIO external signals ─────────────────────────────────────────
     inout  wire [31:0] gpio_io,
-    output wire        gpio_irq,
-
-    // ── DMA status signals ────────────────────────────────────────────
-    output wire        dma_done,
-    output wire        dma_error,
 
     // ── VeeR trace port (optional — wire out for Verdi probing) ──────────
     output wire [31:0] trace_rv_i_insn_ip,
@@ -762,12 +755,10 @@ module soc_top_with_veer #(
         .sda_pad_i    (sda_pad_i),
         .sda_pad_o    (sda_pad_o),
         .sda_padoen_o (sda_padoen_o),
-        .i2c_irq      (i2c_irq),
 
         // UART
         .uart_tx_o  (uart_tx_o),
         .uart_rx_i  (uart_rx_i),
-        .uart_irq   (uart_irq),
 
         // SPI
         .spi_clk_o  (spi_clk_o),
@@ -776,12 +767,7 @@ module soc_top_with_veer #(
         .spi_miso_i (spi_miso_i),
 
         // GPIO
-        .gpio_io    (gpio_io),
-        .gpio_irq   (gpio_irq),
-
-        // DMA
-        .dma_done   (dma_done),
-        .dma_error  (dma_error)
+        .gpio_io    (gpio_io)
     );
 
 endmodule

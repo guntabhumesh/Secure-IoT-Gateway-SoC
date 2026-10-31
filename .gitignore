@@ -6,9 +6,8 @@
 # -----------------------------
 # Synopsys VCS
 # -----------------------------
-simv
 simv*
-simv.daidir/
+*.daidir/
 simv.vdb/
 csrc/
 ucli.key
@@ -20,6 +19,10 @@ AN.DB/
 *.fsdb
 *.log
 vcs.log
+fsdbreportLog/
+verdi_config_file
+.~lock.*
+*.backup*
 
 # -----------------------------
 # Synopsys Verdi
@@ -29,9 +32,6 @@ VerdiLog/
 novas_autosave.rc
 novas.rc
 novas.conf
-novas.*
-novas_*
-verdi_config_file
 
 # -----------------------------
 # Cadence Xcelium
@@ -143,7 +143,8 @@ cov/
 # -----------------------------
 # RISC-V generated binaries
 # -----------------------------
-
+*.elf
+*.hex
 *.disasm
 
 # -----------------------------
@@ -168,10 +169,11 @@ Thumbs.db
 *.swo
 *.tmp
 *.bak
-
 # ==========================================
 # Vivado generated/project files
 # ==========================================
+
+.vivado/
 .vivado/
 *.xpr
 *.xpr.user
@@ -195,10 +197,10 @@ Thumbs.db
 .gen/
 .sim/
 .runs/
-
 # ==========================================
 # Project-local generated simulation/build files
 # ==========================================
+
 proj_dir/run/vivado_proj/
 proj_dir/run/xsim.dir/
 
@@ -226,10 +228,3 @@ proj_dir/rtl/IP_timer/
 # Vivado generated project/run directories
 proj_dir/run/vivado_proj/
 proj_dir/run/xsim.dir/
-*.tcl
-
-# Verdi / VCS simulation and configuration files
-dump_all_ip.fsdb
-*.fsdb
-ucli.key
-vc_hdrs.h

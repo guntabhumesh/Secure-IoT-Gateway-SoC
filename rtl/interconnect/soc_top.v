@@ -5,18 +5,19 @@
 //
 // Address map (each window = 2^24 = 16 MB):
 //   m00  0x0000_0000  axi_to_wb_bridge → i2c_master_top
-//   m01  0x0100_0000  axi_aes_slave    → aes_cipher_top + aes_inv_cipher_top
-//   m02  0x0200_0000  axi_uart_slave   → axi_uart_top (AXI4-Lite UART)
-//   m03  0x0300_0000  dummy_axi_slave
-//   m04  0x0400_0000  dummy_axi_slave
-//   m05  0x0500_0000  dummy_axi_slave
-//   m06  0x0600_0000  dummy_axi_slave
-//   m07  0x0700_0000  dummy_axi_slave
+//   m01  0x0100_0000  axi_aes_slave    → aes_cipher_top
+//   m02  0x0200_0000  axi_uart_slave   → axi_uart_top
+//   m03  0x0300_0000  axi_spi_top
+//   m04  0x0400_0000  gpio_axi
+//   m05  0x0500_0000  axi_ram (program memory)
+//   m06  0x0600_0000  axi_ram (data memory)
+//   m07  0x0700_0000  timer_axi → general timer
 //   m08  0x0800_0000  dummy_axi_slave
 //   m09  0x0900_0000  dummy_axi_slave
 //   m10  0x0A00_0000  dummy_axi_slave
+//   m11  0x0B00_0000  dma_axi_wrapper_v (DMA CSR)
 //
-// Two AXI master ports (s00, s01) — s01 exposed to top-level for a second CPU.
+// Three AXI master ports: s00 (VeeR LSU), s01 (spare), s02 (DMA master).
 // =============================================================================
 
 `timescale 1ns/1ps
@@ -116,13 +117,10 @@ module soc_top #(
     output wire        sda_pad_o,
     output wire        sda_padoen_o,
 
-    // ── Interrupt (from I2C) ──────────────────────────────────────────
-    output wire        i2c_irq,
 
     // ── UART external signals ─────────────────────────────────────────
     output wire        uart_tx_o,
     input  wire        uart_rx_i,
-    output wire        uart_irq,
 
     // ── SPI external signals ──────────────────────────────────────────
     output wire        spi_clk_o,
@@ -132,11 +130,15 @@ module soc_top #(
 
     // ── GPIO external signals ─────────────────────────────────────────
     inout  wire [31:0] gpio_io,
-    output wire        gpio_irq,
 
-    // ── DMA status signals ────────────────────────────────────────────
+    // ── Interrupts and Status ─────────────────────────────────────────
+    output wire        i2c_irq,
+    output wire        uart_irq,
+    output wire        gpio_irq,
     output wire        dma_done,
-    output wire        dma_error
+    output wire        dma_error,
+    output wire        timer_irq
+
 );
 
     // Active-high reset for logic that needs it
@@ -847,7 +849,57 @@ module soc_top #(
     assign m06_buser = 1'b0;
     assign m06_ruser = 1'b0;
 
-    `DUMMY_INST(07, 7)  `DUMMY_INST(08, 8)
+    // ══════════════════════════════════════════════════════════════════
+    // m07: General Timer (AXI4-Lite slave at 0x0700_0000)
+    //
+    // timer_axi uses AXI4-Lite ports (no awid/awlen/awsize/awburst).
+    // The interconnect drives full AXI4; the extra burst/size/ID signals
+    // are simply not connected — the timer always responds as a single-beat
+    // slave.  awid/arid are passed through to bid/rid so the interconnect
+    // sees its own ID returned.  rlast/blast are tied high (single beat).
+    // ══════════════════════════════════════════════════════════════════
+    timer_axi u_timer (
+        .aclk       (clk),
+        .aresetn    (rst_n),
+        // Write address
+        .awaddr     (m07_awaddr),
+        .awprot     (m07_awprot),
+        .awvalid    (m07_awvalid),
+        .awready    (m07_awready),
+        // Write data
+        .wdata      (m07_wdata),
+        .wstrb      (m07_wstrb),
+        .wvalid     (m07_wvalid),
+        .wready     (m07_wready),
+        // Write response
+        .bresp      (m07_bresp),
+        .bvalid     (m07_bvalid),
+        .bready     (m07_bready),
+        // Read address
+        .araddr     (m07_araddr),
+        .arprot     (m07_arprot),
+        .arvalid    (m07_arvalid),
+        .arready    (m07_arready),
+        // Read data
+        .rdata      (m07_rdata),
+        .rresp      (m07_rresp),
+        .rvalid     (m07_rvalid),
+        .rready     (m07_rready),
+        // Optional IO — tie off (no external PWM/capture needed)
+        .ext_meas_i (1'b0),
+        .capture_i  (1'b0),
+        .pwm_o      (),
+        .trigger_o  (),
+        .irq        (timer_irq)
+    );
+    // AXI4-Lite has no ID/user/last on B/R channels — drive from AW/AR IDs
+    assign m07_bid   = m07_awid;
+    assign m07_rid   = m07_arid;
+    assign m07_rlast = 1'b1;
+    assign m07_buser = 1'b0;
+    assign m07_ruser = 1'b0;
+
+    `DUMMY_INST(08, 8)
     `DUMMY_INST(09, 9)  `DUMMY_INST(10,10)
 
 

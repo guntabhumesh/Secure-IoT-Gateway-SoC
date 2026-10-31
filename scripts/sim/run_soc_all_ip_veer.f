@@ -24,6 +24,7 @@
 # ── VeeR EL2 generated defines (edit this path to your snapshot) ────────
 # Run: python3 rtl/core/configs/veer.config -set=iccm_enable=1
 # This generates common_defines.vh in the snapshot directory.
++incdir+snapshots/default
 +incdir+rtl/core/snapshots/default
 +incdir+rtl/core/design/include
 +incdir+rtl/core/design/lib
@@ -170,6 +171,14 @@ rtl/gpio/rtl/verilog/gpio_wb.sv
 rtl/gpio/rtl/verilog/gpio_apb.sv
 rtl/gpio/rtl/verilog/gpio_wrapper.sv
 rtl/general_timer/lib/rtl/axi4lite_slave_adapter.sv
+
+# ── General Timer ─────────────────────────────────────────────────────
+# timer_axi: AXI4-Lite top-level wrapper (instantiated at m07, 0x0700_0000)
+# timer_core: countdown/compare/PWM hardware
+# timer_regs: register file (uses axi4lite_slave_adapter above)
+rtl/general_timer/rtl/verilog/timer_core.sv
+rtl/general_timer/rtl/verilog/timer_regs.sv
+rtl/general_timer/rtl/verilog/timer_axi.sv
 
 # ── DMA ───────────────────────────────────────────────────────────────
 +incdir+rtl/dma/rtl/inc

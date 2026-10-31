@@ -1,0 +1,171 @@
+Magic 271485
+Revision Verdi_U-2023.03-SP1
+
+; Window Layout
+viewPort 0 25 1600 850 240 360
+
+; File list
+openDirFile -d / "" "dump_soc_testplan.fsdb"
+
+signalSpacing 5
+zoom 0.000000 5000000000.000000
+cursor 200000.000000
+marker 0.000000
+curSTATUS ByChange
+
+; ==============================================================================
+; Group 1: Clocks, Resets & Top Level
+; ==============================================================================
+addGroup "1. SYSTEM & CLK/RST"
+addSignal -h 15 /tb_soc_testplan/clk
+addSignal -h 15 -holdScope rst_n
+addSignal -h 15 -holdScope uart_tx_o
+
+; ==============================================================================
+; Group 2: VeeR EL2 LSU Bus (64-bit Core Master)
+; ==============================================================================
+addGroup "2. VEER LSU BUS (64-bit)"
+addSignal -h 15 -UNSIGNED -HEX /tb_soc_testplan/dut/u_veer/lsu_axi_awaddr[31:0]
+addSignal -h 15 -holdScope lsu_axi_awvalid
+addSignal -h 15 -holdScope lsu_axi_awready
+addSignal -h 15 -UNSIGNED -HEX -holdScope lsu_axi_wdata[63:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope lsu_axi_wstrb[7:0]
+addSignal -h 15 -holdScope lsu_axi_wvalid
+addSignal -h 15 -holdScope lsu_axi_wready
+addSignal -h 15 -UNSIGNED -HEX -holdScope lsu_axi_bresp[1:0]
+addSignal -h 15 -holdScope lsu_axi_bvalid
+addSignal -h 15 -holdScope lsu_axi_bready
+addSignal -h 15 -UNSIGNED -HEX -holdScope lsu_axi_araddr[31:0]
+addSignal -h 15 -holdScope lsu_axi_arvalid
+addSignal -h 15 -holdScope lsu_axi_arready
+addSignal -h 15 -UNSIGNED -HEX -holdScope lsu_axi_rdata[63:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope lsu_axi_rresp[1:0]
+addSignal -h 15 -holdScope lsu_axi_rvalid
+addSignal -h 15 -holdScope lsu_axi_rready
+
+; ==============================================================================
+; Group 3: Interconnect Master s00 (32-bit CPU Port)
+; ==============================================================================
+addGroup "3. AXI INTERCONNECT s00 (CPU)"
+addSignal -h 15 -UNSIGNED -HEX /tb_soc_testplan/dut/u_soc/u_ic/s00_axi_awaddr[31:0]
+addSignal -h 15 -holdScope s00_axi_awvalid
+addSignal -h 15 -holdScope s00_axi_awready
+addSignal -h 15 -UNSIGNED -HEX -holdScope s00_axi_wdata[31:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope s00_axi_wstrb[3:0]
+addSignal -h 15 -holdScope s00_axi_wvalid
+addSignal -h 15 -holdScope s00_axi_wready
+addSignal -h 15 -UNSIGNED -HEX -holdScope s00_axi_bresp[1:0]
+addSignal -h 15 -holdScope s00_axi_bvalid
+addSignal -h 15 -holdScope s00_axi_bready
+addSignal -h 15 -UNSIGNED -HEX -holdScope s00_axi_araddr[31:0]
+addSignal -h 15 -holdScope s00_axi_arvalid
+addSignal -h 15 -holdScope s00_axi_arready
+addSignal -h 15 -UNSIGNED -HEX -holdScope s00_axi_rdata[31:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope s00_axi_rresp[1:0]
+addSignal -h 15 -holdScope s00_axi_rvalid
+addSignal -h 15 -holdScope s00_axi_rready
+
+; ==============================================================================
+; Group 4: I2C Master (0x0000_0000)
+; ==============================================================================
+addGroup "4. I2C MASTER (0x0000_0000)"
+addSignal -h 15 -UNSIGNED -HEX /tb_soc_testplan/dut/u_soc/u_wb_bridge/wb_adr_o[4:2]
+addSignal -h 15 -UNSIGNED -HEX -holdScope wb_dat_o[7:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope wb_dat_i[7:0]
+addSignal -h 15 -holdScope wb_stb_o
+addSignal -h 15 -holdScope wb_ack_i
+addSignal -h 15 /tb_soc_testplan/dut/u_soc/scl_padoen_o
+addSignal -h 15 -holdScope sda_padoen_o
+addSignal -h 15 /tb_soc_testplan/i2c_scl_line
+addSignal -h 15 -holdScope i2c_sda_line
+addSignal -h 15 -UNSIGNED -HEX /tb_soc_testplan/dut/u_soc/u_i2c/byte_controller/c_state[4:0]
+addSignal -h 15 /tb_soc_testplan/dut/u_soc/i2c_irq
+
+; ==============================================================================
+; Group 5: SPI Master (0x0300_0000)
+; ==============================================================================
+addGroup "5. SPI MASTER (0x0300_0000)"
+addSignal -h 15 -UNSIGNED -HEX /tb_soc_testplan/dut/u_soc/u_spi/s_axi_awaddr[31:0]
+addSignal -h 15 -holdScope s_axi_awvalid
+addSignal -h 15 -UNSIGNED -HEX -holdScope s_axi_wdata[31:0]
+addSignal -h 15 -holdScope s_axi_wvalid
+addSignal -h 15 /tb_soc_testplan/dut/u_soc/spi_cs_n_o
+addSignal -h 15 -holdScope spi_clk_o
+addSignal -h 15 -holdScope spi_mosi_o
+addSignal -h 15 -holdScope spi_miso_i
+addSignal -h 15 -UNSIGNED -HEX /tb_soc_testplan/dut/u_soc/u_spi/axi_spi_ctrl_i0/fsm_spi_ctrl[4:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope spi_send_data[7:0]
+addSignal -h 15 -holdScope spi_busy
+
+; ==============================================================================
+; Group 6: General Timer (0x0700_0000)
+; ==============================================================================
+addGroup "6. GENERAL TIMER (0x0700_0000)"
+addSignal -h 15 -UNSIGNED -HEX /tb_soc_testplan/dut/u_soc/u_timer/awaddr[31:0]
+addSignal -h 15 -holdScope awvalid
+addSignal -h 15 -UNSIGNED -HEX -holdScope wdata[31:0]
+addSignal -h 15 -holdScope wvalid
+addSignal -h 15 -UNSIGNED -HEX -holdScope araddr[31:0]
+addSignal -h 15 -holdScope arvalid
+addSignal -h 15 -UNSIGNED -HEX -holdScope rdata[31:0]
+addSignal -h 15 -holdScope rvalid
+addSignal -h 15 -UNSIGNED -HEX /tb_soc_testplan/dut/u_soc/u_timer/u_timer_regs/load_val[31:0]
+addSignal -h 15 /tb_soc_testplan/dut/u_soc/u_timer/u_timer_core/en
+addSignal -h 15 -UNSIGNED -HEX -holdScope current_val[31:0]
+addSignal -h 15 -holdScope irq
+addSignal -h 15 -UNSIGNED -HEX /tb_soc_testplan/dut/u_soc/u_timer/u_timer_regs/reg_int_sts[31:0]
+addSignal -h 15 /tb_soc_testplan/dut/u_soc/timer_irq
+
+; ==============================================================================
+; Group 7: AES Accelerator (0x0100_0000)
+; ==============================================================================
+addGroup "7. AES-128 IP (0x0100_0000)"
+addSignal -h 15 -UNSIGNED -HEX /tb_soc_testplan/dut/u_soc/u_aes/s_axi_awaddr[31:0]
+addSignal -h 15 -holdScope s_axi_awvalid
+addSignal -h 15 -UNSIGNED -HEX -holdScope s_axi_wdata[31:0]
+addSignal -h 15 -holdScope s_axi_wvalid
+addSignal -h 15 -holdScope aes_ld
+addSignal -h 15 -holdScope aes_kld
+addSignal -h 15 -UNSIGNED -HEX /tb_soc_testplan/dut/u_soc/u_aes/u_enc/key[127:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope text_in[127:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope text_out[127:0]
+addSignal -h 15 -holdScope done
+
+; ==============================================================================
+; Group 8: GPIO Controller (0x0400_0000)
+; ==============================================================================
+addGroup "8. GPIO IP (0x0400_0000)"
+addSignal -h 15 -UNSIGNED -HEX /tb_soc_testplan/dut/u_soc/u_gpio/s_axi_awaddr[31:0]
+addSignal -h 15 -holdScope s_axi_awvalid
+addSignal -h 15 -UNSIGNED -HEX -holdScope s_axi_wdata[31:0]
+addSignal -h 15 -UNSIGNED -HEX /tb_soc_testplan/dut/u_soc/gpio_io[31:0]
+addSignal -h 15 /tb_soc_testplan/dut/u_soc/gpio_irq
+
+; ==============================================================================
+; Group 9: DMA Controller & AXI Master s02 (0x0B00_0000)
+; ==============================================================================
+addGroup "9. DMA CONTROLLER (0x0B00_0000)"
+addSignal -h 15 -UNSIGNED -HEX /tb_soc_testplan/dut/u_soc/u_dma_wrapper_v/u_dma_wrapper/u_csr_dma/i_awaddr[7:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope i_wdata[63:0]
+addSignal -h 15 /tb_soc_testplan/dut/u_soc/u_dma_wrapper_v/u_dma_wrapper/dma_fsm_inst/state[3:0]
+addSignal -h 15 -UNSIGNED -HEX /tb_soc_testplan/dut/u_soc/u_ic/s02_axi_araddr[31:0]
+addSignal -h 15 -holdScope s02_axi_arvalid
+addSignal -h 15 -holdScope s02_axi_arready
+addSignal -h 15 -UNSIGNED -HEX -holdScope s02_axi_rdata[31:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope s02_axi_awaddr[31:0]
+addSignal -h 15 -holdScope s02_axi_awvalid
+addSignal -h 15 -holdScope s02_axi_awready
+addSignal -h 15 -UNSIGNED -HEX -holdScope s02_axi_wdata[31:0]
+addSignal -h 15 /tb_soc_testplan/dut/u_soc/dma_done
+
+; ==============================================================================
+; Group 10: UART (0x0200_0000)
+; ==============================================================================
+addGroup "10. UART IP (0x0200_0000)"
+addSignal -h 15 -UNSIGNED -HEX /tb_soc_testplan/dut/u_soc/u_uart/s_axi_awaddr[31:0]
+addSignal -h 15 -holdScope s_axi_awvalid
+addSignal -h 15 -UNSIGNED -HEX -holdScope s_axi_wdata[31:0]
+addSignal -h 15 -holdScope s_axi_wvalid
+addSignal -h 15 -holdScope s_axi_wready
+addSignal -h 15 -holdScope uart_tx_o
+addSignal -h 15 /tb_soc_testplan/dut/u_soc/uart_irq
