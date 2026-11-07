@@ -6,12 +6,12 @@
 # run simulation, and view waveforms in Verdi.
 #
 # Usage:
-#   ./scripts/sim/run_soc_testplan.sh fw       # Build firmware (.c -> .hex bank files)
-#   ./scripts/sim/run_soc_testplan.sh compile  # Compile RTL with VCS + Verdi PLI
-#   ./scripts/sim/run_soc_testplan.sh sim      # Run simulation (dumps dump_soc_testplan.fsdb)
-#   ./scripts/sim/run_soc_testplan.sh wave     # Open waveforms in Verdi
-#   ./scripts/sim/run_soc_testplan.sh all      # fw -> compile -> sim (default)
-#   ./scripts/sim/run_soc_testplan.sh clean    # Clean build artifacts
+#   ./run/run_soc_testplan.sh fw       # Build firmware (.c -> .hex bank files)
+#   ./run/run_soc_testplan.sh compile  # Compile RTL with VCS + Verdi PLI
+#   ./run/run_soc_testplan.sh sim      # Run simulation (dumps dump_soc_testplan.fsdb)
+#   ./run/run_soc_testplan.sh wave     # Open waveforms in Verdi
+#   ./run/run_soc_testplan.sh all      # fw -> compile -> sim (default)
+#   ./run/run_soc_testplan.sh clean    # Clean build artifacts
 # =============================================================================
 
 set -e
@@ -74,7 +74,7 @@ with open('firmware/soc_testplan_iccm.bin', 'rb') as f:
 print(f'[INFO] ICCM: {w_iccm} words generated across 4 banks.')
 
 # DCCM (Data)
-subprocess.run(['$OBJCOPY', '-O', 'binary', '--only-section=.rodata', '--only-section=.data', 'firmware/soc_testplan.elf', 'firmware/soc_testplan_dccm.bin'], check=True)
+subprocess.run(['$OBJCOPY', '-O', 'binary', '--only-section=.rodata', '--only-section=.srodata', '--only-section=.data', '--only-section=.sdata', 'firmware/soc_testplan.elf', 'firmware/soc_testplan_dccm.bin'], check=True)
 with open('firmware/soc_testplan_dccm.bin', 'rb') as f:
     w_dccm = make_banks(f.read(), 'firmware/soc_testplan_dccm')
 print(f'[INFO] DCCM: {w_dccm} words generated across 4 banks.')

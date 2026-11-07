@@ -58,6 +58,7 @@ build/
 sim/
 !scripts/build/
 !scripts/sim/
+!run/
 simulation/
 obj_dir/
 *.wlf
@@ -141,9 +142,11 @@ coverage/
 cov/
 
 # -----------------------------
-# RISC-V generated binaries
+# RISC-V generated binaries (Explicitly Whitelisted)
 # -----------------------------
-
+!*.elf
+!*.hex
+!*.bin
 *.disasm
 
 # -----------------------------

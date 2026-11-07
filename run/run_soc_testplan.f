@@ -209,6 +209,28 @@ rtl/dma/rggen-verilog-rtl/rggen_or_reducer.v
 rtl/dma/rggen-verilog-rtl/rggen_register_common.v
 rtl/wrappers/dma_axi_wrapper_v.sv
 
+# ── VIP Virtual Interfaces (from tb/) ──────────────────────────────────
+tb/uart_uvm_tb/uart_if.sv
+tb/spi_uvm_tb/spi_if.sv
+tb/i2c_uvm_tb/i2c_if.sv
+tb/gpio_uvm_tb/gpio_if.sv
+tb/jtag_uvm_tb/jtag_if.sv
+
+# ── VIP Packages (from tb/) ────────────────────────────────────────────
++incdir+tb/uart_uvm_tb
++incdir+tb/spi_uvm_tb
++incdir+tb/i2c_uvm_tb
++incdir+tb/gpio_uvm_tb
++incdir+tb/jtag_uvm_tb
++incdir+tb
+
+tb/uart_uvm_tb/uart_pkg.sv
+tb/spi_uvm_tb/spi_pkg.sv
+tb/i2c_uvm_tb/i2c_pkg.sv
+tb/gpio_uvm_tb/gpio_pkg.sv
+tb/jtag_uvm_tb/jtag_pkg.sv
+tb/soc_vips_env_pkg.sv
+
 # ── Testbench ──────────────────────────────────────────────────────────
 tb/tb_soc_testplan.v
 

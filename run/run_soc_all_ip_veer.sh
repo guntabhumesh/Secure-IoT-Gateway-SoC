@@ -6,12 +6,12 @@
 # and view waveforms in Verdi.
 #
 # Usage:
-#   ./scripts/sim/run_soc_all_ip_veer.sh fw       # Build firmware + hex banks
-#   ./scripts/sim/run_soc_all_ip_veer.sh compile  # Compile RTL with VCS + Verdi PLI
-#   ./scripts/sim/run_soc_all_ip_veer.sh sim      # Run simulation (dumps dump_all_ip.fsdb)
-#   ./scripts/sim/run_soc_all_ip_veer.sh wave     # Open waveforms in Verdi
-#   ./scripts/sim/run_soc_all_ip_veer.sh all      # fw -> compile -> sim (default)
-#   ./scripts/sim/run_soc_all_ip_veer.sh clean    # Clean build artifacts
+#   ./run/run_soc_all_ip_veer.sh fw       # Build firmware + hex banks
+#   ./run/run_soc_all_ip_veer.sh compile  # Compile RTL with VCS + Verdi PLI
+#   ./run/run_soc_all_ip_veer.sh sim      # Run simulation (dumps dump_all_ip.fsdb)
+#   ./run/run_soc_all_ip_veer.sh wave     # Open waveforms in Verdi
+#   ./run/run_soc_all_ip_veer.sh all      # fw -> compile -> sim (default)
+#   ./run/run_soc_all_ip_veer.sh clean    # Clean build artifacts
 # =============================================================================
 
 set -e

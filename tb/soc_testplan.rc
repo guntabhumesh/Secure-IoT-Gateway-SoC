@@ -169,3 +169,19 @@ addSignal -h 15 -holdScope s_axi_wvalid
 addSignal -h 15 -holdScope s_axi_wready
 addSignal -h 15 -holdScope uart_tx_o
 addSignal -h 15 /tb_soc_testplan/dut/u_soc/uart_irq
+
+; ==============================================================================
+; Group 11: UVM VIP Virtual Interfaces (tb/)
+; ==============================================================================
+addGroup "11. UVM VIP INTERFACES"
+addSignal -h 15 /tb_soc_testplan/u_uart_if/uart_tx_o
+addSignal -h 15 -holdScope uart_rx_i
+addSignal -h 15 /tb_soc_testplan/u_spi_if/spi_cs_n_o
+addSignal -h 15 -holdScope spi_clk_o
+addSignal -h 15 -holdScope spi_mosi_o
+addSignal -h 15 -holdScope spi_miso_i
+addSignal -h 15 /tb_soc_testplan/u_i2c_if/scl_pad_i
+addSignal -h 15 -holdScope sda_pad_i
+addSignal -h 15 -UNSIGNED -HEX /tb_soc_testplan/u_gpio_if/gpio_o[31:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope gpio_i[31:0]
+

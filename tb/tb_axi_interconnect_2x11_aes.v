@@ -914,27 +914,28 @@ task axi_write;
     input [ADDR_WIDTH-1:0] addr;
     input [DATA_WIDTH-1:0] data;
 begin
-    @(posedge clk); #1;
-    // Drive AW and W simultaneously
+    @(posedge clk);
     s00_axi_awaddr  <= addr;
     s00_axi_awvalid <= 1'b1;
     s00_axi_wdata   <= data;
     s00_axi_wstrb   <= 4'hf;
     s00_axi_wlast   <= 1'b1;
     s00_axi_wvalid  <= 1'b1;
+    s00_axi_bready  <= 1'b1;
 
-    // Wait for AW handshake
-    @(posedge clk);
-    while (!s00_axi_awready) @(posedge clk);
-    #1; s00_axi_awvalid <= 1'b0;
+    fork
+        begin
+            while (!(s00_axi_awvalid && s00_axi_awready)) @(posedge clk);
+            s00_axi_awvalid <= 1'b0;
+        end
+        begin
+            while (!(s00_axi_wvalid && s00_axi_wready)) @(posedge clk);
+            s00_axi_wvalid <= 1'b0;
+            s00_axi_wlast  <= 1'b0;
+        end
+    join
 
-    // Wait for W handshake
-    while (!s00_axi_wready) @(posedge clk);
-    #1; s00_axi_wvalid <= 1'b0;
-
-    // Wait for B handshake
-    s00_axi_bready <= 1'b1;
-    while (!s00_axi_bvalid) @(posedge clk);
+    while (!(s00_axi_bvalid && s00_axi_bready)) @(posedge clk);
     @(posedge clk);
     s00_axi_bready <= 1'b0;
 end
@@ -946,18 +947,15 @@ task axi_read;
     input [ADDR_WIDTH-1:0] addr;
     output [DATA_WIDTH-1:0] data;
 begin
-    @(posedge clk); #1;
+    @(posedge clk);
     s00_axi_araddr  <= addr;
     s00_axi_arvalid <= 1'b1;
+    s00_axi_rready  <= 1'b1;
 
-    // Wait for AR handshake
-    @(posedge clk);
-    while (!s00_axi_arready) @(posedge clk);
-    #1; s00_axi_arvalid <= 1'b0;
+    while (!(s00_axi_arvalid && s00_axi_arready)) @(posedge clk);
+    s00_axi_arvalid <= 1'b0;
 
-    // Wait for R handshake
-    s00_axi_rready <= 1'b1;
-    while (!s00_axi_rvalid) @(posedge clk);
+    while (!(s00_axi_rvalid && s00_axi_rready)) @(posedge clk);
     data = s00_axi_rdata;
     @(posedge clk);
     s00_axi_rready <= 1'b0;

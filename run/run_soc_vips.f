@@ -188,10 +188,10 @@ rtl/dma/rggen-verilog-rtl/rggen_register_common.v
 rtl/wrappers/dma_axi_wrapper_v.sv
 
 # ── VIP Virtual Interfaces ─────────────────────────────────────────────
-scripts/interfacecsv/uart_uvm_tb/uart_if.sv
-scripts/interfacecsv/spi_uvm_tb/spi_if.sv
-scripts/interfacecsv/i2c_uvm_tb/i2c_if.sv
-scripts/interfacecsv/gpio_uvm_tb/gpio_if.sv
+tb/uart_uvm_tb/uart_if.sv
+tb/spi_uvm_tb/spi_if.sv
+tb/i2c_uvm_tb/i2c_if.sv
+tb/gpio_uvm_tb/gpio_if.sv
 
 # ── VIP Package & Components ───────────────────────────────────────────
 +incdir+tb/vips

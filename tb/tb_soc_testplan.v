@@ -17,6 +17,10 @@
 
 `timescale 1ns/1ps
 
+import uvm_pkg::*;
+`include "uvm_macros.svh"
+import soc_vips_env_pkg::*;
+
 module tb_soc_testplan;
 
     // ── Parameters ─────────────────────────────────────────────────────
@@ -40,12 +44,6 @@ module tb_soc_testplan;
     wire [31:1] nmi_vec    = NMI_VEC;
     wire [31:1] jtag_id    = JTAG_ID;
     wire        nmi_int    = 1'b0;
-
-    // JTAG tied off
-    wire        jtag_tck   = 1'b0;
-    wire        jtag_tms   = 1'b1;
-    wire        jtag_tdi   = 1'b0;
-    wire        jtag_tdo;
 
     // Spare AXI master (s01) tied off
     wire [IDW-1:0]   s01_axi_awid    = {IDW{1'b0}};
@@ -87,29 +85,49 @@ module tb_soc_testplan;
     wire             s01_axi_rlast;
     wire             s01_axi_rvalid;
 
+    // ── VIP Virtual Interface Instantiations (tb/) ───────────────────
+    uart_if u_uart_if (.clk(clk), .rst_n(rst_n));
+    spi_if  u_spi_if  (.clk(clk), .rst_n(rst_n));
+    i2c_if  u_i2c_if  (.clk(clk), .rst_n(rst_n));
+    gpio_if u_gpio_if (.clk(clk), .rst_n(rst_n));
+    jtag_if u_jtag_if (.clk(clk), .rst_n(rst_n));
+
+    // Interface signal aliases and initial drive
+    wire uart_tx_o = u_uart_if.uart_tx_o;
+
+    // GPIO bidirectional pin: driven by VIP driver when gpio_oe is asserted;
+    // driven by SoC DUT when configured as output.
+    wire [31:0] gpio_io = (u_gpio_if.gpio_oe != 32'h0) ? u_gpio_if.gpio_i : 32'bz;
+    assign u_gpio_if.gpio_o = gpio_io;
+
+    // UART loopback control: enabled by default for firmware loopback test
+    bit uart_loopback_en = 1'b1;
+    always @(*) begin
+        bit loop_en = 1'b1;
+        void'(uvm_config_db#(bit)::get(null, "", "uart_loopback_en", loop_en));
+        if (loop_en)
+            u_uart_if.uart_rx_i = u_uart_if.uart_tx_o;
+    end
+
     // I2C open-drain pullup emulation
-    wire scl_pad_o, scl_padoen_o;
-    wire sda_pad_o, sda_padoen_o;
+    always @(*) begin
+        u_i2c_if.scl_pad_i = u_i2c_if.scl_padoen_o ? 1'b1 : u_i2c_if.scl_pad_o;
+        u_i2c_if.sda_pad_i = u_i2c_if.sda_padoen_o ? 1'b1 : u_i2c_if.sda_pad_o;
+    end
+
+    // Interface defaults (overwritten procedurally by active VIP drivers)
+    initial begin
+        u_gpio_if.gpio_oe   = 32'h0;
+        u_spi_if.spi_miso_i = 1'b0;
+        u_jtag_if.jtag_tck  = 1'b0;
+        u_jtag_if.jtag_tms  = 1'b1;
+        u_jtag_if.jtag_tdi  = 1'b0;
+    end
+
+    // Peripheral Interrupt Wires
     wire i2c_irq;
-    wire scl_pad_i = scl_padoen_o ? 1'b1 : scl_pad_o;
-    wire sda_pad_i = sda_padoen_o ? 1'b1 : sda_pad_o;
-    wire i2c_scl_line = scl_pad_i;
-    wire i2c_sda_line = sda_pad_i;
-
-    // UART
-    wire uart_tx_o;
     wire uart_irq;
-    reg  uart_rx_i;
-
-    // SPI
-    wire spi_clk_o, spi_cs_n_o, spi_mosi_o;
-    wire spi_miso_i = 1'b0;
-
-    // GPIO
-    wire [31:0] gpio_io;
-    wire        gpio_irq;
-
-    // DMA
+    wire gpio_irq;
     wire dma_done, dma_error;
 
     // VeeR trace
@@ -125,8 +143,16 @@ module tb_soc_testplan;
     initial clk = 0;
     always #CLK_HALF clk = ~clk;
 
-    // UART loopback (zero delay)
-    always @(*) uart_rx_i = uart_tx_o;
+    // ── Register Virtual Interfaces in UVM Configuration Database ──────
+    initial begin
+        uvm_config_db#(virtual uart_if)::set(null, "*", "vif", u_uart_if);
+        uvm_config_db#(virtual spi_if)::set(null,  "*", "vif", u_spi_if);
+        uvm_config_db#(virtual i2c_if)::set(null,  "*", "vif", u_i2c_if);
+        uvm_config_db#(virtual gpio_if)::set(null, "*", "vif", u_gpio_if);
+        uvm_config_db#(virtual jtag_if)::set(null, "*", "vif", u_jtag_if);
+        $display("[TB] Virtual interfaces registered in uvm_config_db.");
+        run_test("soc_monitor_test");
+    end
 
     // ── DUT Instantiation ──────────────────────────────────────────────
     soc_top_with_veer #(
@@ -142,10 +168,10 @@ module tb_soc_testplan;
         .jtag_id          (jtag_id),
         .nmi_int          (nmi_int),
 
-        .jtag_tck         (jtag_tck),
-        .jtag_tms         (jtag_tms),
-        .jtag_tdi         (jtag_tdi),
-        .jtag_tdo         (jtag_tdo),
+        .jtag_tck         (u_jtag_if.jtag_tck),
+        .jtag_tms         (u_jtag_if.jtag_tms),
+        .jtag_tdi         (u_jtag_if.jtag_tdi),
+        .jtag_tdo         (u_jtag_if.jtag_tdo),
 
         .s01_axi_awid     (s01_axi_awid),
         .s01_axi_awaddr   (s01_axi_awaddr),
@@ -185,22 +211,22 @@ module tb_soc_testplan;
         .s01_axi_rvalid   (s01_axi_rvalid),
         .s01_axi_rready   (s01_axi_rready),
 
-        .scl_pad_i        (scl_pad_i),
-        .scl_pad_o        (scl_pad_o),
-        .scl_padoen_o     (scl_padoen_o),
-        .sda_pad_i        (sda_pad_i),
-        .sda_pad_o        (sda_pad_o),
-        .sda_padoen_o     (sda_padoen_o),
+        .scl_pad_i        (u_i2c_if.scl_pad_i),
+        .scl_pad_o        (u_i2c_if.scl_pad_o),
+        .scl_padoen_o     (u_i2c_if.scl_padoen_o),
+        .sda_pad_i        (u_i2c_if.sda_pad_i),
+        .sda_pad_o        (u_i2c_if.sda_pad_o),
+        .sda_padoen_o     (u_i2c_if.sda_padoen_o),
         .i2c_irq          (i2c_irq),
 
-        .uart_tx_o        (uart_tx_o),
-        .uart_rx_i        (uart_rx_i),
+        .uart_tx_o        (u_uart_if.uart_tx_o),
+        .uart_rx_i        (u_uart_if.uart_rx_i),
         .uart_irq         (uart_irq),
 
-        .spi_clk_o        (spi_clk_o),
-        .spi_cs_n_o       (spi_cs_n_o),
-        .spi_mosi_o       (spi_mosi_o),
-        .spi_miso_i       (spi_miso_i),
+        .spi_clk_o        (u_spi_if.spi_clk_o),
+        .spi_cs_n_o       (u_spi_if.spi_cs_n_o),
+        .spi_mosi_o       (u_spi_if.spi_mosi_o),
+        .spi_miso_i       (u_spi_if.spi_miso_i),
 
         .gpio_io          (gpio_io),
         .gpio_irq         (gpio_irq),
@@ -359,6 +385,7 @@ module tb_soc_testplan;
     localparam BAUD_HALF_NS   = BAUD_PERIOD_NS / 2;
 
     reg [7:0] uart_rx_byte;
+    reg [7:0] prev_uart_rx_byte;
     integer   uart_bit_cnt;
     reg       uart_sampling;
     integer   test_pass_count = 0;
@@ -368,15 +395,18 @@ module tb_soc_testplan;
     string uart_line;
 
     initial begin
-        uart_sampling   = 0;
-        test_done       = 0;
-        uart_line       = "";
+        uart_sampling       = 0;
+        test_done           = 0;
+        prev_uart_rx_byte   = 8'h00;
+        uart_rx_byte        = 8'h00;
+        uart_line           = "";
     end
 
     always @(negedge uart_tx_o) begin
         if (!uart_sampling && rst_n) begin
             uart_sampling = 1;
             #(BAUD_PERIOD_NS + BAUD_HALF_NS);
+            prev_uart_rx_byte = uart_rx_byte;
             uart_rx_byte = 8'h00;
             for (uart_bit_cnt = 0; uart_bit_cnt < 8; uart_bit_cnt = uart_bit_cnt + 1) begin
                 uart_rx_byte[uart_bit_cnt] = uart_tx_o;
@@ -396,9 +426,28 @@ module tb_soc_testplan;
                 uart_line = {uart_line, string'(uart_rx_byte)};
             end
 
-            // Check for test completion
+            // Check for test completion: 0x04 (EOT - ALL PASS) or 0x15 (NAK - FAIL)
             if (uart_rx_byte == 8'h04) begin
+                uvm_event test_done_ev;
+                test_pass_count = dut.Gen_dccm_enable.dccm_loop[0].dccm_bank.ram_core[0][31:0];
+                test_fail_count = dut.Gen_dccm_enable.dccm_loop[1].dccm_bank.ram_core[0][31:0];
+                $display("[TB] Test Plan Completed: pass_count=%0d, fail_count=%0d, bitmap=0x%08x",
+                         test_pass_count, test_fail_count,
+                         dut.Gen_dccm_enable.dccm_loop[2].dccm_bank.ram_core[0][31:0]);
                 test_done = 1;
+                test_done_ev = uvm_event_pool::get_global("test_done_ev");
+                test_done_ev.trigger();
+            end else if (uart_rx_byte == 8'h15) begin
+                uvm_event test_done_ev;
+                test_pass_count = dut.Gen_dccm_enable.dccm_loop[0].dccm_bank.ram_core[0][31:0];
+                test_fail_count = dut.Gen_dccm_enable.dccm_loop[1].dccm_bank.ram_core[0][31:0];
+                $display("[TB] Test Plan FAILED: pass_count=%0d, fail_count=%0d, fail_mask0=0x%08x, fail_mask1=0x%08x",
+                         test_pass_count, test_fail_count,
+                         dut.Gen_dccm_enable.dccm_loop[2].dccm_bank.ram_core[0][31:0],
+                         dut.Gen_dccm_enable.dccm_loop[3].dccm_bank.ram_core[0][31:0]);
+                test_done = 1;
+                test_done_ev = uvm_event_pool::get_global("test_done_ev");
+                test_done_ev.trigger();
             end
 
             uart_sampling = 0;

@@ -168,37 +168,44 @@ Secure-IoT-Gateway-SoC/
 │   └── wrappers/
 │       └── dma_axi_wrapper_v.sv            # Verilog wire-level wrapper for DMA
 ├── tb/
-│   ├── tb_soc_vips.sv                      # Integrated SoC testbench with active UVM VIPs
-│   ├── tb_soc_testplan.v                   # UVM testplan verification testbench (12 tests)
+│   ├── tb_soc_testplan.v                   # Master SoC verification testbench with VIP interfaces
+│   ├── soc_vips_env_pkg.sv                 # Unified SystemVerilog UVM package with all 5 VIP agents
+│   ├── soc_testplan.rc                     # Pre-configured Verdi signal arrangement config
 │   ├── tb_soc_all_ip_veer.v                # Full SoC multi-IP testbench with VeeR EL2 CPU
-│   ├── vips/                               # Protocol-aware UVM VIP components
-│   │   ├── uart_vip.sv                     # UART VIP monitor & scoreboard
-│   │   ├── spi_vip.sv                      # SPI VIP monitor & scoreboard
-│   │   ├── i2c_vip.sv                      # I2C VIP monitor & scoreboard
-│   │   ├── gpio_vip.sv                     # GPIO VIP monitor & scoreboard
-│   │   └── soc_vip_pkg.sv                  # UVM package, environment & test classes
-│   ├── tb_soc_all_ips.sv                   # Comprehensive testbench verifying all 12 ports
+│   ├── tb_soc_all_ips.sv                   # Comprehensive BFM testbench verifying all 12 ports
 │   ├── tb_soc_dma_interconnect.sv          # Autonomous DMA transfer verification
-│   ├── soc_uart_tb.v                       # Dedicated standalone UART testbench
-│   ├── tb_soc_top.v                        # 12-test directed base verification
-│   ├── tb_soc_veer_top.v                   # CPU firmware execution & UART loopback
 │   ├── tb_spi_gpio_vcs.sv                  # Dedicated SPI and GPIO testbench
-│   ├── axi_to_wb_bridge.v                  # AXI4-Lite to Wishbone bridge
-│   └── dummy_axi_slave.v                   # Bus responder stub for unmapped slots
+│   ├── soc_uart_tb.v                       # Dedicated standalone UART testbench
+│   ├── tb_axi_interconnect_2x11_aes.v      # AXI Interconnect + AES + I2C verification
+│   ├── axi_to_wb_bridge.v                  # AXI4-Lite to Wishbone bridge (I2C)
+│   ├── axi_to_aes_bridge.v                 # AXI4-Lite to AES-128 adapter
+│   ├── dummy_axi_slave.v                   # Bus responder stub for unmapped slots
+│   ├── uart_uvm_tb/                        # UVM VIP for UART interface
+│   ├── spi_uvm_tb/                         # UVM VIP for SPI interface
+│   ├── i2c_uvm_tb/                         # UVM VIP for I2C interface
+│   ├── gpio_uvm_tb/                        # UVM VIP for GPIO interface
+│   └── jtag_uvm_tb/                        # UVM VIP for JTAG interface
 ├── firmware/
-│   ├── soc_testplan.c                      # Embedded C firmware for 12 UVM testplan cases
+│   ├── soc_testplan.c                      # 34-test bare-metal self-checking test suite
 │   ├── soc_all_ip_test.c                   # Multi-IP peripheral test firmware
-│   ├── soc_test.c                          # C firmware for VeeR EL2 ICCM execution
-│   └── startup.S / link_iccm.ld            # Boot code and linker script
+│   ├── uart_rw.c                           # UART loopback firmware
+│   ├── startup.S / link_iccm.ld            # RISC-V assembly boot code and linker script
+│   └── *.elf, *.hex, *.bin                 # Pre-compiled firmware binaries & 4-bank memory hex files
 ├── run/
-│   ├── run_soc_vips.sh / .f                # SoC + active UVM VIPs build, simulation & Verdi runner
-│   ├── run_soc_testplan.sh / .f            # Full SoC UVM testplan runner & filelist
-│   ├── run_soc_all_ip_veer.sh / .f         # Multi-IP SoC + VeeR simulation runner
-│   └── run_uvm.sh                          # Standalone interface UVM VIP runner (UART/SPI/I2C/GPIO)
+│   ├── run_soc_testplan.sh / .f            # Master 1-shot full SoC UVM verification runner & filelist
+│   ├── run_uvm.sh                          # Standalone UVM VIP runner (UART/SPI/I2C/GPIO/JTAG)
+│   ├── run_soc_all_ips_bfm.sh / .f         # Integrated All-IPs crossbar simulation runner
+│   ├── run_dma.sh / run_dma_sim.f          # Autonomous DMA crossbar transfer simulation runner
+│   ├── run_uart.sh / run_uart.f            # Standalone UART testbench runner
+│   ├── run_vcs.sh                          # SPI + GPIO simulation runner
+│   ├── run_axi_aes_i2c.sh / .f             # AXI Crossbar + AES + I2C runner
+│   ├── run_soc_all_ip_veer.sh / .f         # Multi-IP SoC + VeeR core simulation runner
+│   └── run_*_uvm.f                         # Individual VIP filelists
 └── scripts/
-    ├── build/build_soc_project.tcl         # Vivado FPGA build project script
-    ├── sim/run_all_ips_sim.tcl             # Simulation script for full SoC verification
-    └── interfacecsv/                       # VIP virtual interface definitions & CSV specs
+    ├── build/                              # Vivado FPGA build project TCL scripts
+    ├── interfacecsv/                       # VIP CSV pin definitions & UVM generator
+    ├── convert_hex.py                      # Firmware binary to 4-bank memory hex converter
+    └── sim -> ../run                       # Backward-compatibility symlink to run/
 ```
 
 ---
@@ -234,93 +241,109 @@ Detailed register maps and bitfield descriptions are documented in [`doc/Secure_
 
 ---
 
-## 🚀 Quick Start & Simulation
+## 🚀 Quick Start & Simulation Guide
 
-### 1. Integrated SoC Simulation with Active UVM VIPs (`tb_soc_vips.sv`)
-Preloads the RISC-V C firmware testplan into 4-bank ICCM & DCCM with 7-bit SECDED ECC, boots the VeeR EL2 core, and validates all external transactions using protocol-aware UVM VIP scoreboards (UART, SPI, I2C, GPIO) with FSDB waveform generation.
+This repository contains fully automated scripts and VCS filelists to build firmware, compile RTL, run simulations, and debug with Synopsys Verdi.
+
+### 1. Prerequisites & Environment Setup
+
+Ensure Synopsys VCS, Verdi, and the RISC-V GCC toolchain are installed and exported in your shell:
 
 ```bash
-# Automated runner from repo root (fw -> compile -> sim):
-./run/run_soc_vips.sh all
+# Synopsys EDA Environment (adjust paths to your local installation)
+export VCS_HOME="/path/to/vcs/U-2023.03"
+export VERDI_HOME="/path/to/verdi/U-2023.03-SP1"
+export SNPSLMD_LICENSE_FILE="27021@your-license-server"
+export LM_LICENSE_FILE="27021@your-license-server"
 
-# Or run from inside run/:
-cd run && ./run_soc_vips.sh all
-
-# Individual step commands:
-./run/run_soc_vips.sh fw       # Build C firmware to 4-bank ECC hex
-./run/run_soc_vips.sh compile  # Compile RTL + UVM VIPs with Synopsys VCS
-./run/run_soc_vips.sh sim      # Run simulation (dumps dump_soc_vips.fsdb)
-./run/run_soc_vips.sh wave     # Open waveforms in Verdi
-```
-
-**Direct Synopsys VCS & Verdi Commands:**
-```bash
-# VCS Compile:
-vcs -full64 -sverilog -ntb_opts uvm -timescale=1ns/1ps -debug_access+all -kdb \
-    -P $VERDI_HOME/share/PLI/VCS/LINUX64/novas.tab \
-       $VERDI_HOME/share/PLI/VCS/LINUX64/pli.a \
-    +define+FSDB \
-    -f run/run_soc_vips.f -l run/compile_vips.log -o simv_soc_vips
-
-# Run Simulation:
-./simv_soc_vips +UVM_TESTNAME=soc_c_test +hex_file=firmware/soc_testplan.hex -no_save +vcs+lic+wait -l sim_soc_vips.log
-
-# Open in Verdi Waveform Viewer:
-verdi -dbdir simv_soc_vips.daidir -ssf dump_soc_vips.fsdb &
+# RISC-V Cross-Compiler Toolchain
+export PATH="$VCS_HOME/bin:$VERDI_HOME/bin:/path/to/riscv-toolchain/bin:$PATH"
 ```
 
 ---
 
-### 2. Full SoC UVM Testplan Verification (`tb_soc_testplan.v`)
-Executes all 12 test cases from the UVM test plan (UART loopback, Core memory sign extension, DCCM patterns, AES-128 NIST KAT, SPI multi-byte transfer, GPIO atomic SET/CLR/TGL, I2C multi-byte transmission, SRAM byte-strobes, DMA autonomous burst transfer, General Timer countdown & W1C clear, Dummy slaves decoding, and End-to-end SoC mission status):
+### 2. Master Regression: Full SoC UVM Verification Suite
+
+Executes the comprehensive **34-test SoC verification suite** ([`firmware/soc_testplan.c`](firmware/soc_testplan.c)) on the VeeR EL2 core, exercising all 12 AXI fabric ports with live checking by the UVM VIP monitors (`uart_monitor`, `spi_monitor`, `i2c_monitor`, `gpio_monitor`):
 
 ```bash
-# Automated runner:
+# 1. Clone the repository
+git clone https://github.com/guntabhumesh/Secure-IoT-Gateway-SoC.git
+cd Secure-IoT-Gateway-SoC
+
+# 2. Run the complete flow in a single command (Build FW -> VCS Compile -> Simulate)
 ./run/run_soc_testplan.sh all
 
-# Direct VCS & Verdi:
-vcs -full64 -sverilog -ntb_opts uvm -timescale=1ns/1ps -debug_access+all -kdb \
-    -P $VERDI_HOME/share/PLI/VCS/LINUX64/novas.tab \
-       $VERDI_HOME/share/PLI/VCS/LINUX64/pli.a \
-    +define+FSDB \
-    -f run/run_soc_testplan.f -l run/compile_testplan.log -o simv_testplan
+# 3. View simulation waveforms in Synopsys Verdi
+./run/run_soc_testplan.sh wave
+```
 
-./simv_testplan +hex_file=firmware/soc_testplan.hex -no_save +vcs+lic+wait
+#### Individual Step-by-Step Flow:
+```bash
+./run/run_soc_testplan.sh fw       # Compile C test suite -> 4-bank memory hex files
+./run/run_soc_testplan.sh compile  # Compile SoC RTL + UVM VIPs with Synopsys VCS
+./run/run_soc_testplan.sh sim      # Run simulation (generates dump_soc_testplan.fsdb)
+./run/run_soc_testplan.sh clean    # Clean temporary build and simulation artifacts
+```
 
-# Open in Verdi:
-verdi -dbdir simv_testplan.daidir -ssf dump_soc_testplan.fsdb -sswr tb/soc_testplan.rc &
+#### Expected Simulation Output:
+```text
+=======================================================
+         UVM TEST PLAN VERIFICATION SUMMARY           
+=======================================================
+ Total Test Cases Passed: 34
+ Total Test Cases Failed: 0
+ OVERALL RESULT: *** ALL TEST PLAN CASES PASSED ***
+ Waveform file  : dump_soc_testplan.fsdb
+=======================================================
+```
+
+#### Distinct IP Data Patterns Sampled by UVM VIPs:
+* **UART VIP (`uart_if`)**: Transmits `0x11, 0x22, 0x33` (Status: `0x22`, EOT: `0x04`).
+* **SPI VIP (`spi_if`)**: Transmits `0x44, 0x55, 0x66` over MOSI with CS assertion/de-assertion.
+* **I2C VIP (`i2c_if`)**: Transmits `0x77, 0x88, 0x99` (Write) & `0x71, 0x72, 0x73` (Repeated START).
+* **GPIO VIP (`gpio_if`)**: Bit transitions: `0x55555555`, `0xAAAAAAAA`, `0xDEADBEEF`, `0xDEAD00F0`.
+* **Internal Subsystems**: AES-128 NIST FIPS-197 KAT, DMA burst copy (`0x55AA1234`, `0xCAFEBABE`), General Timer, RAM byte strobes.
+
+---
+
+### 3. Standalone Interface UVM VIP Runner (`run/run_uvm.sh`)
+
+Test each protocol VIP independently in an isolated testbench:
+
+```bash
+./run/run_uvm.sh uart     # Run UART UVM VIP testbench
+./run/run_uvm.sh spi      # Run SPI UVM VIP testbench
+./run/run_uvm.sh i2c      # Run I2C UVM VIP testbench
+./run/run_uvm.sh gpio     # Run GPIO UVM VIP testbench
+./run/run_uvm.sh jtag     # Run JTAG UVM VIP testbench
+./run/run_uvm.sh all      # Run all 5 interface UVM VIP tests sequentially
 ```
 
 ---
 
-### 3. Multi-IP Full SoC Simulation with VeeR CPU (`tb_soc_all_ip_veer.v`)
+### 4. Integrated Subsystem & BFM Simulations
+
+Run multi-IP crossbar integration and targeted subsystem tests:
+
 ```bash
+# Integrated All-IPs Crossbar Testbench (BFM sweep across all 12 AXI slave ports)
+./run/run_soc_all_ips_bfm.sh
+
+# Autonomous DMA Crossbar Burst Transfer (Program RAM -> Data RAM via AXI)
+./run/run_dma.sh
+
+# Dedicated Standalone UART 16550 Verification (Baud rate, FIFOs, loopback)
+./run/run_uart.sh
+
+# SPI Master + GPIO AXI Concurrent Testbench
+./run/run_vcs.sh
+
+# Integrated AXI Interconnect (2x11) + AES-128 + I2C Master Testbench
+./run/run_axi_aes_i2c.sh
+
+# Full SoC Multi-IP Simulation with VeeR EL2 RISC-V Core
 ./run/run_soc_all_ip_veer.sh all
-
-# Open in Verdi:
-verdi -dbdir simv.daidir -ssf dump_all_ip.fsdb &
-```
-
----
-
-### 4. Interface UVM Verification Suite (`run/run_uvm.sh`)
-Executes individual interface UVM VIP testbenches for AXI, UART, GPIO, SPI, I2C, and JTAG:
-```bash
-./run/run_uvm.sh all      # Run all 6 interface UVM tests
-./run/run_uvm.sh uart     # Run UART interface testbench
-./run/run_uvm.sh gpio     # Run GPIO interface testbench
-./run/run_uvm.sh spi      # Run SPI interface testbench
-./run/run_uvm.sh i2c      # Run I2C interface testbench
-./run/run_uvm.sh jtag     # Run JTAG interface testbench
-```
-
----
-
-### 5. Multi-IP Bus-Functional Simulation & Vivado
-```bash
-# Full Multi-IP directed simulation (BFM)
-./run/run_soc_all_ips_bfm.sh  # or via Vivado
-vivado -mode batch -source scripts/build/build_soc_project.tcl
 ```
 
 ---
@@ -329,17 +352,15 @@ vivado -mode batch -source scripts/build/build_soc_project.tcl
 
 | Testbench | Focus Area | Checks & Assertions |
 |---|---|---|
-| [`tb_soc_vips.sv`](tb/tb_soc_vips.sv) | Active UVM VIP Environment | Validates physical bus transitions on UART, SPI, I2C, and GPIO via protocol scoreboards while running C testplan |
-| [`tb_soc_testplan.v`](tb/tb_soc_testplan.v) | Full SoC UVM Test Plan | Executes all 12 testplan cases on VeeR EL2 CPU with ECC ICCM/DCCM preloading and UART output checking |
-| [`tb_soc_all_ip_veer.v`](tb/tb_soc_all_ip_veer.v) | CPU Firmware Multi-IP | Boots VeeR core from ICCM and verifies interaction with all 11 SoC slave peripherals |
+| [`tb_soc_testplan.v`](tb/tb_soc_testplan.v) | Full SoC UVM Test Plan | Executes 34 comprehensive test cases on VeeR EL2 core with live UVM VIP protocol checking and DCCM status logging |
+| [`soc_vips_env_pkg.sv`](tb/soc_vips_env_pkg.sv) | Unified UVM Environment | Instantiates `uart_agent`, `spi_agent`, `i2c_agent`, `gpio_agent`, and `jtag_agent` in a single verification container |
 | [`tb_soc_all_ips.sv`](tb/tb_soc_all_ips.sv) | Full SoC BFM Integration | Configures & verifies I2C, AES NIST vectors, UART TX, SPI master, GPIO, Program/Data RAMs, and DMA CSR |
 | [`tb_soc_dma_interconnect.sv`](tb/tb_soc_dma_interconnect.sv) | DMA Fabric Interaction | Tests DMA autonomous read/write streaming across interconnect master port `s02` |
 | [`soc_uart_tb.v`](tb/soc_uart_tb.v) | UART Standalone | Tests baud rate divider setup, FIFO pushing, `LSR.THRE`, hardware loopback, and multi-byte string echo |
-| [`tb_soc_top.v`](tb/tb_soc_top.v) | Base Peripheral Suite | 12 directed tests covering I2C, AES Appendices B & C.1, UART, and dummy-slave routing |
-| [`tb_soc_veer_top.v`](tb/tb_soc_veer_top.v) | CPU Firmware Boot | Preloads ICCM with compiled `.hex`, boots VeeR EL2 core, and verifies execution via UART output |
 | [`tb_spi_gpio_vcs.sv`](tb/tb_spi_gpio_vcs.sv) | SPI & GPIO Standalone | Directed VCS test verifying SPI ratio clock generation, mode bits, and GPIO pin toggling |
-| [`tb_soc_veer_top.v`](tb/tb_soc_veer_top.v) | CPU Firmware Boot | Preloads ICCM with compiled `.hex`, boots VeeR EL2 core, and verifies execution via UART output |
-| [`tb_spi_gpio_vcs.sv`](tb/tb_spi_gpio_vcs.sv) | SPI & GPIO Standalone | Directed VCS test verifying SPI ratio clock generation, mode bits, and GPIO pin toggling |
+| [`tb_axi_interconnect_2x11_aes.v`](tb/tb_axi_interconnect_2x11_aes.v) | AXI + AES + I2C | Tests AXI-to-WB bridge (I2C) and AXI-to-AES adapter across crossbar matrix |
+| [`tb_soc_all_ip_veer.v`](tb/tb_soc_all_ip_veer.v) | CPU Firmware Multi-IP | Boots VeeR core from ICCM and verifies interaction with all SoC slave peripherals |
+| [`tb_uart_rw_veer.v`](tb/tb_uart_rw_veer.v) | CPU Firmware Boot & UART | Preloads ICCM with compiled `.hex`, boots VeeR EL2 core, and verifies execution via UART output |
 
 ---
 

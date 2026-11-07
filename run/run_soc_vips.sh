@@ -6,12 +6,12 @@
 # active UVM VIPs (UART, SPI, I2C, GPIO) executing the C-Test firmware.
 #
 # Usage:
-#   ./scripts/sim/run_soc_vips.sh fw       # Compile C test firmware to bank hex
-#   ./scripts/sim/run_soc_vips.sh compile  # Compile SoC + VIPs with Synopsys VCS
-#   ./scripts/sim/run_soc_vips.sh sim      # Run UVM simulation with active VIP checking
-#   ./scripts/sim/run_soc_vips.sh wave     # Open Verdi waveform viewer
-#   ./scripts/sim/run_soc_vips.sh all      # Run full flow: fw -> compile -> sim (default)
-#   ./scripts/sim/run_soc_vips.sh clean    # Clean simulation artifacts
+#   ./run/run_soc_vips.sh fw       # Compile C test firmware to bank hex
+#   ./run/run_soc_vips.sh compile  # Compile SoC + VIPs with Synopsys VCS
+#   ./run/run_soc_vips.sh sim      # Run UVM simulation with active VIP checking
+#   ./run/run_soc_vips.sh wave     # Open Verdi waveform viewer
+#   ./run/run_soc_vips.sh all      # Run full flow: fw -> compile -> sim (default)
+#   ./run/run_soc_vips.sh clean    # Clean simulation artifacts
 # =============================================================================
 
 set -e

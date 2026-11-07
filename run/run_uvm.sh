@@ -22,7 +22,7 @@ export PATH="$VCS_HOME/bin:$VERDI_HOME/bin:$PATH"
 
 RUN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(readlink -f "$RUN_DIR/..")"
-TB_BASE="$ROOT_DIR/scripts/interfacecsv"
+TB_BASE="$ROOT_DIR/tb"
 
 TARGET="${1:-all}"
 
